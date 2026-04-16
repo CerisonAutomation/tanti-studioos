@@ -646,7 +646,7 @@ export default function QuotesModule() {
                     onClick={() => setSelectedQuote(quote)}
                     className="cursor-pointer"
                   >
-                    <Card className="glass-card hover:border-brand-indigo/30 transition-all hover:glow-indigo">
+                    <Card className="glass-card glass-hover hover:border-brand-indigo/30 transition-all rounded-xl">
                       <CardContent className="p-4">
                         <div className="flex items-center gap-4">
                           <div className={`flex items-center justify-center h-10 w-10 rounded-lg bg-brand-surface ${tierCfg.color}`}>

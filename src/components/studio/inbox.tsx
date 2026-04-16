@@ -120,7 +120,7 @@ export default function InboxModule() {
 
       const res = await fetch(`/api/messages?${params.toString()}`);
       const data = await res.json();
-      setMessages(Array.isArray(data) ? data : []);
+      setMessages(Array.isArray(data) ? data : (data.messages || []));
     } catch (err) {
       console.error('Error fetching messages:', err);
       toast.error('Failed to load messages');
@@ -142,10 +142,10 @@ export default function InboxModule() {
 
   const markAsRead = async (messageId: string) => {
     try {
-      await fetch('/api/messages', {
-        method: 'PATCH',
+      await fetch(`/api/messages/${messageId}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: messageId, status: 'read' }),
+        body: JSON.stringify({ status: 'read' }),
       });
       setMessages((prev) =>
         prev.map((m) => (m.id === messageId ? { ...m, status: 'read' } : m))
@@ -160,10 +160,10 @@ export default function InboxModule() {
 
   const markAsArchived = async (messageId: string) => {
     try {
-      await fetch('/api/messages', {
-        method: 'PATCH',
+      await fetch(`/api/messages/${messageId}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: messageId, status: 'archived' }),
+        body: JSON.stringify({ status: 'archived' }),
       });
       setMessages((prev) => prev.filter((m) => m.id !== messageId));
       if (selectedMessage?.id === messageId) {
@@ -227,10 +227,10 @@ export default function InboxModule() {
       setReplyText('');
       setAiSuggestion('');
       // Mark original as replied
-      await fetch('/api/messages', {
-        method: 'PATCH',
+      await fetch(`/api/messages/${selectedMessage.id}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: selectedMessage.id, status: 'replied' }),
+        body: JSON.stringify({ status: 'replied' }),
       });
       setMessages((prev) =>
         prev.map((m) =>

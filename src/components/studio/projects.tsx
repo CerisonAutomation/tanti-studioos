@@ -524,7 +524,7 @@ export default function ProjectsModule() {
           <TabsContent value="overview" className="mt-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Project Info */}
-              <Card className="glass-card col-span-1 md:col-span-2">
+              <Card className="glass-card card-shine rounded-xl col-span-1 md:col-span-2">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base font-['Space_Grotesk']">Project Details</CardTitle>
                 </CardHeader>

@@ -9,7 +9,8 @@ export type ActiveModule =
   | "floorplan"
   | "procurement"
   | "ai-design"
-  | "settings";
+  | "settings"
+  | "agents";
 
 interface AppState {
   activeModule: ActiveModule;

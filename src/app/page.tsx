@@ -17,7 +17,6 @@ import {
   Bot,
   ChevronRight,
   Search,
-  Command,
   Bell,
   User,
 } from 'lucide-react';
@@ -37,6 +36,9 @@ import FloorplanModule from '@/components/studio/floorplan';
 import ProcurementModule from '@/components/studio/procurement';
 import AiDesignModule from '@/components/studio/ai-design';
 import AgentsModule from '@/components/studio/agents';
+import SettingsModule from '@/components/studio/settings';
+import CommandPalette from '@/components/studio/command-palette';
+import NotificationPanel from '@/components/studio/notifications';
 
 const navItems: { id: ActiveModule; label: string; icon: React.ReactNode; badge?: string }[] = [
   { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard className="h-5 w-5" /> },
@@ -47,12 +49,14 @@ const navItems: { id: ActiveModule; label: string; icon: React.ReactNode; badge?
   { id: 'floorplan', label: 'Floor Plans', icon: <PenTool className="h-5 w-5" /> },
   { id: 'procurement', label: 'Procurement', icon: <ShoppingCart className="h-5 w-5" /> },
   { id: 'ai-design', label: 'AI Design', icon: <Sparkles className="h-5 w-5" /> },
-  { id: 'settings', label: 'Agents', icon: <Bot className="h-5 w-5" /> },
+  { id: 'agents', label: 'Agents', icon: <Bot className="h-5 w-5" /> },
+  { id: 'settings', label: 'Settings', icon: <Settings className="h-5 w-5" /> },
 ];
 
 export default function Home() {
-  const { activeModule, setActiveModule, sidebarOpen, setSidebarOpen } = useAppStore();
+  const { activeModule, setActiveModule, sidebarOpen, setSidebarOpen, setCommandOpen } = useAppStore();
   const [unreadCount, setUnreadCount] = useState(0);
+  const [notificationOpen, setNotificationOpen] = useState(false);
 
   useEffect(() => {
     fetch('/api/messages?status=unread')
@@ -63,6 +67,18 @@ export default function Home() {
       })
       .catch(() => {});
   }, [activeModule]);
+
+  // Keyboard shortcut: Ctrl+K for command palette
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setCommandOpen(true);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [setCommandOpen]);
 
   const renderModule = () => {
     switch (activeModule) {
@@ -82,8 +98,10 @@ export default function Home() {
         return <ProcurementModule />;
       case 'ai-design':
         return <AiDesignModule />;
-      case 'settings':
+      case 'agents':
         return <AgentsModule />;
+      case 'settings':
+        return <SettingsModule />;
       default:
         return <DashboardModule />;
     }
@@ -100,7 +118,7 @@ export default function Home() {
       >
         {/* Logo */}
         <div className="p-4 flex items-center gap-3 border-b border-border/20">
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-brand-indigo to-brand-indigo-light flex items-center justify-center shrink-0 glow-indigo">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-brand-indigo to-brand-indigo-light flex items-center justify-center shrink-0 logo-pulse">
             <span className="text-white font-bold font-['Space_Grotesk'] text-sm tracking-tight">TI</span>
           </div>
           {sidebarOpen && (
@@ -112,7 +130,10 @@ export default function Home() {
               <h1 className="font-bold font-['Space_Grotesk'] text-sm whitespace-nowrap tracking-wide">
                 TANTI INTERIORS
               </h1>
-              <p className="text-[10px] text-brand-cyan whitespace-nowrap tracking-widest">STUDIOOS</p>
+              <div className="flex items-center gap-2">
+                <p className="text-[10px] text-brand-cyan whitespace-nowrap tracking-widest">STUDIOOS</p>
+                <span className="pro-badge">PRO</span>
+              </div>
             </motion.div>
           )}
         </div>
@@ -120,7 +141,7 @@ export default function Home() {
         {/* Nav Items */}
         <ScrollArea className="flex-1 py-3">
           <nav className="space-y-1 px-2">
-            {navItems.map((item) => {
+            {navItems.slice(0, 5).map((item) => {
               const isActive = activeModule === item.id;
               const itemBadge = item.id === 'inbox' && unreadCount > 0 ? String(unreadCount) : item.badge;
               return (
@@ -149,6 +170,42 @@ export default function Home() {
                     <Badge className="bg-brand-cyan/20 text-brand-cyan border-brand-cyan/30 text-[10px] h-5 min-w-5 flex items-center justify-center">
                       {itemBadge}
                     </Badge>
+                  )}
+                  {isActive && sidebarOpen && (
+                    <ChevronRight className="h-3 w-3 text-brand-cyan shrink-0" />
+                  )}
+                </button>
+              );
+            })}
+          </nav>
+          
+          {/* Divider */}
+          <div className="nav-divider" />
+          
+          <nav className="space-y-1 px-2">
+            {navItems.slice(5).map((item) => {
+              const isActive = activeModule === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveModule(item.id)}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all group ${
+                    isActive
+                      ? 'bg-brand-indigo/15 text-foreground glow-indigo'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-brand-surface-light/50'
+                  }`}
+                >
+                  <div className={`shrink-0 transition-colors ${isActive ? 'text-brand-cyan' : 'text-muted-foreground group-hover:text-brand-cyan'}`}>
+                    {item.icon}
+                  </div>
+                  {sidebarOpen && (
+                    <motion.span
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="whitespace-nowrap flex-1 text-left"
+                    >
+                      {item.label}
+                    </motion.span>
                   )}
                   {isActive && sidebarOpen && (
                     <ChevronRight className="h-3 w-3 text-brand-cyan shrink-0" />
@@ -204,18 +261,23 @@ export default function Home() {
             </h2>
           </div>
           <div className="flex items-center gap-3">
-            <div className="relative hidden sm:block">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Quick search..."
-                className="pl-9 w-56 bg-brand-surface-light/50 border-border/30 h-8 text-sm"
-              />
-            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setCommandOpen(true)}
+              className="relative text-muted-foreground hover:text-foreground h-8 gap-2 px-3"
+            >
+              <Search className="h-4 w-4" />
+              <span className="hidden sm:inline text-xs">Search</span>
+              <kbd className="hidden sm:inline-flex pointer-events-none h-5 select-none items-center gap-1 rounded border border-border/40 bg-brand-surface-light/50 px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
+                ⌘K
+              </kbd>
+            </Button>
             <Button
               variant="ghost"
               size="icon"
               className="relative text-muted-foreground hover:text-foreground h-8 w-8"
-              onClick={() => setActiveModule('inbox')}
+              onClick={() => setNotificationOpen(true)}
             >
               <Bell className="h-4 w-4" />
               {unreadCount > 0 && (
@@ -240,6 +302,16 @@ export default function Home() {
           {renderModule()}
         </div>
       </main>
+
+      {/* Command Palette Overlay */}
+      <CommandPalette />
+
+      {/* Notification Panel */}
+      <NotificationPanel
+        open={notificationOpen}
+        onOpenChange={setNotificationOpen}
+        unreadCount={unreadCount}
+      />
     </div>
   );
 }

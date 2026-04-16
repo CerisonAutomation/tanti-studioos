@@ -480,7 +480,7 @@ export default function ClientsModule() {
                     transition={{ duration: 0.2 }}
                   >
                     <Card
-                      className="glass-card cursor-pointer hover:glow-cyan transition-all"
+                      className="glass-card glass-hover cursor-pointer rounded-xl transition-all"
                       onClick={() => {
                         useAppStore.getState().setActiveModule('projects');
                         useAppStore.getState().setSelectedProjectId(p.id);
@@ -918,7 +918,7 @@ export default function ClientsModule() {
                 transition={{ duration: 0.2, delay: i * 0.03 }}
               >
                 <Card
-                  className="glass-card cursor-pointer hover:glow-cyan transition-all group"
+                  className="glass-card card-shine glass-hover cursor-pointer rounded-xl transition-all group"
                   onClick={() => setSelectedClientId(client.id)}
                 >
                   <CardContent className="p-4">

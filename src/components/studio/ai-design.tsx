@@ -516,7 +516,7 @@ export default function AiDesignModule() {
             <TabsContent value="design" className="flex-1 overflow-y-auto mt-0 p-6">
               <div className="max-w-4xl mx-auto space-y-6">
                 {/* Generator Controls */}
-                <Card className="glass-card border-brand-indigo/20">
+                <Card className="glass-card card-shine rounded-xl border-brand-indigo/20">
                   <CardHeader>
                     <CardTitle className="text-base flex items-center gap-2">
                       <Wand2 className="size-5 text-brand-cyan" /> Design Concept Generator
@@ -598,7 +598,7 @@ export default function AiDesignModule() {
                 {/* Generated Concept */}
                 {generatedConcept && (
                   <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-                    <Card className="glass-card border-brand-cyan/20 glow-cyan">
+                    <Card className="glass-card card-shine rounded-xl border-brand-cyan/20 glow-cyan">
                       <CardHeader>
                         <div className="flex items-center justify-between">
                           <CardTitle className="text-base flex items-center gap-2">
@@ -635,7 +635,7 @@ export default function AiDesignModule() {
 
       {/* AI Tool Result Dialog */}
       <Dialog open={toolDialogOpen} onOpenChange={setToolDialogOpen}>
-        <DialogContent className="glass-card border-brand-indigo/30 max-w-lg max-h-[80vh] overflow-y-auto">
+        <DialogContent className="glass-card rounded-xl border-brand-indigo/30 max-w-lg max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="gradient-text flex items-center gap-2">
               <Sparkles className="size-5 text-brand-cyan" />

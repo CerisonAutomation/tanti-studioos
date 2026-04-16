@@ -345,7 +345,7 @@ export default function ProcurementModule() {
               whileHover={{ y: -2 }}
             >
               <Card
-                className="glass-card border-brand-indigo/20 hover:border-brand-cyan/30 transition-colors cursor-pointer"
+                className="glass-card glass-hover border-brand-indigo/20 hover:border-brand-cyan/30 transition-colors cursor-pointer rounded-xl"
                 onClick={() => { setSelectedSupplier(supplier); setShowDetailDialog(true); }}
               >
                 <CardHeader className="pb-2">

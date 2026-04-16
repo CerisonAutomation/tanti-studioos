@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import {
   DollarSign,
@@ -19,13 +19,15 @@ import {
   AlertCircle,
   Star,
   Zap,
+  X,
+  Sparkles,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
-import { useAppStore } from '@/lib/store';
+import { useAppStore, type ActiveModule } from '@/lib/store';
 
 interface DashboardData {
   totalClients: number;
@@ -111,6 +113,133 @@ function getActivityColor(type: string): string {
   }
 }
 
+function getActivityDotColor(type: string): string {
+  switch (type) {
+    case 'message': return 'border-brand-cyan bg-brand-cyan/30';
+    case 'milestone': return 'border-brand-gold bg-brand-gold/30';
+    case 'quote': return 'border-brand-indigo-light bg-brand-indigo-light/30';
+    case 'note': return 'border-purple-400 bg-purple-400/30';
+    case 'created': return 'border-green-400 bg-green-400/30';
+    default: return 'border-muted-foreground bg-muted-foreground/30';
+  }
+}
+
+/* ─── Animated Number Counter ─── */
+function AnimatedNumber({ value, format = 'number' }: { value: number; format?: 'number' | 'currency' }) {
+  const [display, setDisplay] = useState(0);
+  const ref = useRef(false);
+
+  useEffect(() => {
+    if (ref.current) return;
+    ref.current = true;
+    const duration = 1200;
+    const start = performance.now();
+
+    const animate = (now: number) => {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      // Ease-out cubic
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setDisplay(Math.round(eased * value));
+      if (progress < 1) requestAnimationFrame(animate);
+    };
+
+    requestAnimationFrame(animate);
+  }, [value]);
+
+  if (format === 'currency') {
+    return <span className="animate-count">{formatCurrency(display)}</span>;
+  }
+  return <span className="animate-count">{display}</span>;
+}
+
+/* ─── Onboarding Banner ─── */
+function OnboardingBanner() {
+  const { setActiveModule } = useAppStore();
+  const [dismissed, setDismissed] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('tanti-onboarding-dismissed') === 'true';
+    }
+    return false;
+  });
+
+  const handleDismiss = () => {
+    setDismissed(true);
+    localStorage.setItem('tanti-onboarding-dismissed', 'true');
+  };
+
+  if (dismissed) return null;
+
+  const steps = [
+    { num: 1, label: 'Add Clients', icon: <Users className="h-5 w-5" />, module: 'clients' as ActiveModule, color: 'from-brand-gold to-amber-400', done: true },
+    { num: 2, label: 'Create Projects', icon: <FolderKanban className="h-5 w-5" />, module: 'projects' as ActiveModule, color: 'from-brand-indigo to-brand-indigo-light', done: true },
+    { num: 3, label: 'Send Quotes', icon: <FileText className="h-5 w-5" />, module: 'quotes' as ActiveModule, color: 'from-brand-cyan to-brand-cyan-dark', done: false },
+    { num: 4, label: 'Enable AI', icon: <Sparkles className="h-5 w-5" />, module: 'ai-design' as ActiveModule, color: 'from-purple-500 to-pink-500', done: false },
+  ];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="glass-card rounded-2xl p-6 border border-border/20 relative overflow-hidden"
+    >
+      {/* Background gradient accent */}
+      <div className="absolute inset-0 bg-gradient-to-r from-brand-indigo/10 via-transparent to-brand-cyan/10 pointer-events-none" />
+
+      <div className="relative">
+        <div className="flex items-start justify-between mb-5">
+          <div>
+            <h3 className="text-xl font-bold font-['Space_Grotesk']">
+              Welcome to{' '}
+              <span className="gradient-text">Tanti Interiors StudioOS</span>
+            </h3>
+            <p className="text-sm text-muted-foreground mt-1">Get started with these quick setup steps</p>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleDismiss}
+            className="text-muted-foreground hover:text-foreground h-7 w-7 -mt-1 -mr-1"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {steps.map((step, idx) => (
+            <button
+              key={step.num}
+              onClick={() => setActiveModule(step.module)}
+              className="relative flex flex-col items-center gap-3 p-4 rounded-xl bg-brand-surface-light/30 border border-border/20 hover:border-brand-cyan/30 transition-all group text-center"
+            >
+              {/* Step number */}
+              <div className="absolute -top-2 -left-2 h-6 w-6 rounded-full bg-brand-surface-lighter border border-border/30 flex items-center justify-center text-[10px] font-bold text-muted-foreground">
+                {step.num}
+              </div>
+              {/* Icon */}
+              <div className={`h-12 w-12 rounded-xl bg-gradient-to-br ${step.color} flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform`}>
+                {step.icon}
+              </div>
+              {/* Label */}
+              <span className="text-xs font-medium group-hover:text-brand-cyan transition-colors">{step.label}</span>
+              {/* Done indicator */}
+              {step.done && (
+                <div className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-green-500 flex items-center justify-center">
+                  <CheckCircle2 className="h-3 w-3 text-white" />
+                </div>
+              )}
+              {/* Connector line */}
+              {idx < steps.length - 1 && (
+                <div className="hidden sm:block absolute top-1/2 -right-2 w-4 border-t border-dashed border-border/40" />
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 export default function DashboardModule() {
   const { setActiveModule } = useAppStore();
   const [data, setData] = useState<DashboardData | null>(null);
@@ -143,15 +272,15 @@ export default function DashboardModule() {
       <div className="p-6 space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="glass-card rounded-xl p-6 animate-pulse">
+            <div key={i} className="glass-card rounded-xl p-6 shimmer">
               <div className="h-4 w-20 bg-muted/30 rounded mb-3" />
               <div className="h-8 w-28 bg-muted/30 rounded" />
             </div>
           ))}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 glass-card rounded-xl p-6 animate-pulse h-80" />
-          <div className="glass-card rounded-xl p-6 animate-pulse h-80" />
+          <div className="lg:col-span-2 glass-card rounded-xl p-6 shimmer h-80" />
+          <div className="glass-card rounded-xl p-6 shimmer h-80" />
         </div>
       </div>
     );
@@ -165,13 +294,14 @@ export default function DashboardModule() {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="p-6 space-y-6"
+      className="p-6 space-y-6 dashboard-bg"
     >
       {/* Header */}
       <motion.div variants={itemVariants} className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold font-['Space_Grotesk']">Welcome to StudioOS</h2>
-          <p className="text-muted-foreground mt-1 text-sm">Tanti Interiors — Luxury Design Management Platform</p>
+          <div className="gradient-line w-48" />
+          <p className="text-muted-foreground mt-2 text-sm">Tanti Interiors — Luxury Design Management Platform</p>
         </div>
         <div className="flex gap-2">
           <Button
@@ -184,9 +314,14 @@ export default function DashboardModule() {
         </div>
       </motion.div>
 
+      {/* Onboarding Banner */}
+      <motion.div variants={itemVariants}>
+        <OnboardingBanner />
+      </motion.div>
+
       {/* KPI Cards */}
       <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="glass-card border-border/20 hover:glow-cyan transition-shadow cursor-pointer" onClick={() => setActiveModule('projects')}>
+        <Card className="glass-card card-shine glass-hover border-border/20 rounded-xl cursor-pointer" onClick={() => setActiveModule('projects')}>
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">Total Revenue</p>
@@ -194,7 +329,9 @@ export default function DashboardModule() {
                 <DollarSign className="h-4 w-4 text-brand-cyan" />
               </div>
             </div>
-            <p className="text-2xl font-bold font-['Space_Grotesk'] mt-2">{formatCurrency(data.acceptedQuotesValue || data.totalRevenue || 0)}</p>
+            <p className="text-2xl font-bold font-['Space_Grotesk'] mt-2">
+              <AnimatedNumber value={data.acceptedQuotesValue || data.totalRevenue || 0} format="currency" />
+            </p>
             <div className="flex items-center gap-1 mt-1">
               <TrendingUp className="h-3 w-3 text-green-400" />
               <span className="text-xs text-green-400">+12.5% this month</span>
@@ -202,7 +339,7 @@ export default function DashboardModule() {
           </CardContent>
         </Card>
 
-        <Card className="glass-card border-border/20 hover:glow-indigo transition-shadow cursor-pointer" onClick={() => setActiveModule('projects')}>
+        <Card className="glass-card card-shine glass-hover border-border/20 rounded-xl cursor-pointer" onClick={() => setActiveModule('projects')}>
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">Active Projects</p>
@@ -210,14 +347,16 @@ export default function DashboardModule() {
                 <FolderKanban className="h-4 w-4 text-brand-indigo-light" />
               </div>
             </div>
-            <p className="text-2xl font-bold font-['Space_Grotesk'] mt-2">{data.totalProjects}</p>
+            <p className="text-2xl font-bold font-['Space_Grotesk'] mt-2">
+              <AnimatedNumber value={data.totalProjects} />
+            </p>
             <div className="flex items-center gap-1 mt-1">
               <span className="text-xs text-muted-foreground">{data.projectsByStatus['execution'] || 0} in execution</span>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="glass-card border-border/20 hover:glow-gold transition-shadow cursor-pointer" onClick={() => setActiveModule('clients')}>
+        <Card className="glass-card card-shine glass-hover border-border/20 rounded-xl cursor-pointer" onClick={() => setActiveModule('clients')}>
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">Active Clients</p>
@@ -225,7 +364,10 @@ export default function DashboardModule() {
                 <Users className="h-4 w-4 text-brand-gold" />
               </div>
             </div>
-            <p className="text-2xl font-bold font-['Space_Grotesk'] mt-2">{data.activeClients} <span className="text-sm text-muted-foreground font-normal">/ {data.totalClients}</span></p>
+            <p className="text-2xl font-bold font-['Space_Grotesk'] mt-2">
+              <AnimatedNumber value={data.activeClients} />
+              <span className="text-sm text-muted-foreground font-normal"> / {data.totalClients}</span>
+            </p>
             <div className="flex items-center gap-1 mt-1">
               <TrendingUp className="h-3 w-3 text-green-400" />
               <span className="text-xs text-green-400">+2 this month</span>
@@ -233,7 +375,7 @@ export default function DashboardModule() {
           </CardContent>
         </Card>
 
-        <Card className="glass-card border-border/20 hover:glow-cyan transition-shadow cursor-pointer" onClick={() => setActiveModule('inbox')}>
+        <Card className="glass-card card-shine glass-hover border-border/20 rounded-xl cursor-pointer" onClick={() => setActiveModule('inbox')}>
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">Unread Messages</p>
@@ -241,7 +383,9 @@ export default function DashboardModule() {
                 <Inbox className="h-4 w-4 text-brand-cyan" />
               </div>
             </div>
-            <p className="text-2xl font-bold font-['Space_Grotesk'] mt-2">{data.unreadMessages}</p>
+            <p className="text-2xl font-bold font-['Space_Grotesk'] mt-2">
+              <AnimatedNumber value={data.unreadMessages} />
+            </p>
             <div className="flex items-center gap-1 mt-1">
               <span className="h-2 w-2 rounded-full bg-brand-cyan pulse-cyan" />
               <span className="text-xs text-brand-cyan">Needs attention</span>
@@ -254,7 +398,7 @@ export default function DashboardModule() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Project Pipeline */}
         <motion.div variants={itemVariants} className="lg:col-span-2">
-          <Card className="glass-card border-border/20">
+          <Card className="glass-card card-shine border-border/20 rounded-xl">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base font-['Space_Grotesk']">Project Pipeline</CardTitle>
@@ -270,17 +414,17 @@ export default function DashboardModule() {
                   const count = data.projectsByStatus[status] || 0;
                   const pct = totalPipelineProjects > 0 ? (count / totalPipelineProjects) * 100 : 0;
                   const colors: Record<string, string> = {
-                    planning: 'bg-brand-indigo/60',
-                    design: 'bg-brand-indigo-light/60',
-                    procurement: 'bg-brand-cyan-dark/60',
-                    execution: 'bg-brand-gold/60',
-                    completion: 'bg-green-500/60',
-                    delivered: 'bg-brand-cyan/60',
+                    planning: 'bg-brand-indigo/60 text-brand-indigo-light',
+                    design: 'bg-brand-indigo-light/60 text-white',
+                    procurement: 'bg-brand-cyan-dark/60 text-brand-cyan',
+                    execution: 'bg-brand-gold/60 text-brand-gold',
+                    completion: 'bg-green-500/60 text-green-300',
+                    delivered: 'bg-brand-cyan/60 text-brand-cyan',
                   };
                   return (
                     <div
                       key={status}
-                      className={`${colors[status]} flex items-center justify-center text-xs font-medium transition-all`}
+                      className={`${colors[status]} pipeline-bar flex items-center justify-center text-xs font-medium`}
                       style={{ width: `${Math.max(pct, count > 0 ? 10 : 0)}%` }}
                       title={`${status}: ${count}`}
                     >
@@ -308,9 +452,9 @@ export default function DashboardModule() {
                   const budgetPct = project.budget ? Math.min((project.spent / project.budget) * 100, 100) : 0;
                   const isOverBudget = project.budget ? project.spent > project.budget * 0.85 : false;
                   return (
-                    <div key={project.id} className="space-y-1.5">
+                    <div key={project.id} className="space-y-1.5 group">
                       <div className="flex items-center justify-between text-sm">
-                        <span className="font-medium truncate">{project.name}</span>
+                        <span className="font-medium truncate group-hover:text-brand-cyan transition-colors">{project.name}</span>
                         <span className="text-muted-foreground text-xs">
                           {formatCurrency(project.spent)} / {project.budget ? formatCurrency(project.budget) : '—'}
                         </span>
@@ -329,7 +473,7 @@ export default function DashboardModule() {
 
         {/* Recent Activity */}
         <motion.div variants={itemVariants}>
-          <Card className="glass-card border-border/20 h-full">
+          <Card className="glass-card border-border/20 rounded-xl h-full">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base font-['Space_Grotesk']">Recent Activity</CardTitle>
@@ -337,17 +481,30 @@ export default function DashboardModule() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4 max-h-80 overflow-y-auto">
-                {(data.recentActivities || []).map((activity) => (
-                  <div key={activity.id} className="flex gap-3">
-                    <div className={`shrink-0 h-7 w-7 rounded-lg flex items-center justify-center ${getActivityColor(activity.type)}`}>
-                      {getActivityIcon(activity.type)}
-                    </div>
+              <div className="relative pl-8 space-y-0 max-h-80 overflow-y-auto">
+                {/* Timeline connecting line */}
+                {(data.recentActivities || []).length > 0 && (
+                  <div className="timeline-line" />
+                )}
+                {(data.recentActivities || []).map((activity, i) => (
+                  <motion.div
+                    key={activity.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.2, delay: i * 0.05 }}
+                    className="relative pb-5"
+                  >
+                    {/* Timeline dot */}
+                    <div className={`timeline-dot ${getActivityDotColor(activity.type)}`} />
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm leading-snug">{activity.description}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{timeAgo(activity.createdAt)}</p>
+                      <div className="flex gap-3 items-start">
+                        <div className="flex-1">
+                          <p className="text-sm leading-snug">{activity.description}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">{timeAgo(activity.createdAt)}</p>
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             </CardContent>
@@ -359,7 +516,7 @@ export default function DashboardModule() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Upcoming Tasks */}
         <motion.div variants={itemVariants} className="lg:col-span-2">
-          <Card className="glass-card border-border/20">
+          <Card className="glass-card border-border/20 rounded-xl">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base font-['Space_Grotesk']">Upcoming Tasks</CardTitle>
@@ -371,7 +528,7 @@ export default function DashboardModule() {
                 <p className="text-sm text-muted-foreground text-center py-8">No upcoming tasks</p>
               ) : (
                 <div className="space-y-3">
-                  {tasks.map((task) => {
+                  {tasks.map((task, i) => {
                     const priorityColors: Record<string, string> = {
                       urgent: 'bg-red-500',
                       high: 'bg-brand-gold',
@@ -379,10 +536,16 @@ export default function DashboardModule() {
                       low: 'bg-muted-foreground',
                     };
                     return (
-                      <div key={task.id} className="flex items-center gap-3 p-3 rounded-xl bg-brand-surface-light/30 hover:bg-brand-surface-light/50 transition-colors">
+                      <motion.div
+                        key={task.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.2, delay: i * 0.05 }}
+                        className="flex items-center gap-3 p-3 rounded-xl bg-brand-surface-light/30 hover:bg-brand-surface-light/50 transition-all group"
+                      >
                         <span className={`shrink-0 h-2 w-2 rounded-full ${priorityColors[task.priority] || priorityColors.medium}`} />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">{task.title}</p>
+                          <p className="text-sm font-medium truncate group-hover:text-brand-cyan transition-colors">{task.title}</p>
                           <p className="text-xs text-muted-foreground">{task.project?.name || 'No project'}</p>
                         </div>
                         <div className="shrink-0 text-right">
@@ -395,7 +558,7 @@ export default function DashboardModule() {
                             </p>
                           )}
                         </div>
-                      </div>
+                      </motion.div>
                     );
                   })}
                 </div>
@@ -406,7 +569,7 @@ export default function DashboardModule() {
 
         {/* Quick Actions */}
         <motion.div variants={itemVariants}>
-          <Card className="glass-card border-border/20">
+          <Card className="glass-card border-border/20 rounded-xl">
             <CardHeader className="pb-3">
               <CardTitle className="text-base font-['Space_Grotesk']">Quick Actions</CardTitle>
             </CardHeader>
@@ -422,7 +585,7 @@ export default function DashboardModule() {
                 <button
                   key={action.label}
                   onClick={() => setActiveModule(action.module)}
-                  className="flex flex-col items-center gap-2 p-4 rounded-xl bg-brand-surface-light/30 border border-border/20 hover:border-brand-cyan/30 hover:glow-cyan transition-all group"
+                  className="gradient-border-animated flex flex-col items-center gap-2 p-4 rounded-xl bg-brand-surface-light/30 border border-border/20 hover:border-brand-cyan/30 hover:glow-cyan transition-all group"
                 >
                   <div className={`${action.color} group-hover:scale-110 transition-transform`}>
                     {action.icon}

@@ -343,7 +343,7 @@ Always maintain a sophisticated, helpful tone. If you're unsure about something,
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0 }}
         >
-          <Card className="glass-card">
+          <Card className="glass-card card-shine rounded-xl">
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
@@ -390,7 +390,7 @@ Always maintain a sophisticated, helpful tone. If you're unsure about something,
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <Card className="glass-card">
+          <Card className="glass-card card-shine rounded-xl">
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
@@ -437,7 +437,7 @@ Always maintain a sophisticated, helpful tone. If you're unsure about something,
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <Card className="glass-card">
+          <Card className="glass-card card-shine rounded-xl">
             <CardContent className="p-4">
               <div className="flex items-center gap-2 mb-3">
                 <div className="h-8 w-8 rounded-lg bg-brand-cyan/10 flex items-center justify-center">
@@ -473,7 +473,7 @@ Always maintain a sophisticated, helpful tone. If you're unsure about something,
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <Card className="glass-card">
+          <Card className="glass-card card-shine rounded-xl">
             <CardContent className="p-4">
               <div className="flex items-center gap-2 mb-3">
                 <div className="h-8 w-8 rounded-lg bg-brand-gold/10 flex items-center justify-center">
@@ -513,7 +513,7 @@ Always maintain a sophisticated, helpful tone. If you're unsure about something,
             exit={{ opacity: 0, height: 0 }}
             className="overflow-hidden"
           >
-            <Card className="glass-card">
+            <Card className="glass-card rounded-xl">
               <CardHeader>
                 <CardTitle className="font-['Space_Grotesk'] flex items-center gap-2">
                   <Settings className="h-5 w-5 text-brand-cyan" /> Agent Configuration
