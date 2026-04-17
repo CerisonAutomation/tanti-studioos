@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
       messageCount: client._count.messages,
     }));
 
-    return NextResponse.json(clientsWithActivity);
+    return NextResponse.json({ clients: clientsWithActivity, total: clientsWithActivity.length });
   } catch (error) {
     console.error('Error fetching clients:', error);
     return NextResponse.json(

@@ -289,3 +289,63 @@ Stage Summary:
 - AI Design module now has 3 tabs: Chat, Design Generator, Image Gen
 - Image generation tab provides complete workflow: prompt → style/room selection → generate → view → download
 - All lint checks pass cleanly
+
+---
+Task ID: 4
+Agent: Announcements & Calendar Agent
+Task: Add Announcements Panel, Calendar View, and Notification Toast System to Dashboard
+
+Work Log:
+- Read worklog.md for project context and prior agent work
+- Read `/src/components/studio/dashboard.tsx` — understood current dashboard structure with KPI cards, project pipeline, budget tracking, activity timeline, upcoming tasks, quick actions, revenue overview
+- Read `/src/app/layout.tsx` — found Toaster already present with custom styling (top-right position, glass-card class)
+
+**Part 1: Studio Announcements Panel** (`/src/components/studio/dashboard.tsx`)
+- Added 4 static announcements with realistic Maltese studio content:
+  1. "New fabric catalog from Italy available" (Design category)
+  2. "Team meeting scheduled for Friday" (Team category)
+  3. "Malta Design Week 2026 registration open" (Events category)
+  4. "Q2 supplier discount negotiated with Lumière Lighting" (Procurement category)
+- Each announcement has: title, description, date, category badge with icon
+- Added `AnnouncementCategory` type and `getCategoryStyle()` helper mapping categories to brand colors and icons
+- Category badges: Design (cyan/Palette), Team (indigo/UsersRound), Events (gold/Ticket), Procurement (green/ShoppingCart)
+- Glassmorphism card styling (`glass-card card-shine`) with `max-h-80 overflow-y-auto` scrollable list
+- "View All" link button at bottom with ArrowRight icon
+- Restructured bottom row from 2-column (Tasks 2/3 + Quick Actions 1/3) to 3-column equal grid (Tasks + Quick Actions + Announcements)
+
+**Part 2: Upcoming Schedule Mini Calendar** (`/src/components/studio/dashboard.tsx`)
+- Added 5 mock schedule events for the current day:
+  1. 09:00 — Client consultation — Sliema apartment (Meeting)
+  2. 11:30 — Mood board review deadline (Deadline)
+  3. 14:00 — Furniture delivery — Valletta penthouse (Delivery)
+  4. 16:00 — Design review — Gozbo villa renovation (Review)
+  5. 17:30 — Supplier call — Lumière Lighting Q2 terms (Meeting)
+- Each event shows: time (monospace), vertical separator, type icon, title, type badge
+- Colored left border per event type: Meeting (indigo), Deadline (red), Delivery (cyan), Review (gold)
+- Type icons: UsersRound, AlertCircle, Truck, Eye with matching colors
+- Type badges with translucent colored backgrounds
+- Added `ScheduleType` type and helper functions: `getScheduleBorder()`, `getScheduleIcon()`, `getScheduleBadge()`
+- Section placed between Revenue Overview and Bottom Row, with section header (Calendar icon + gradient-line)
+- Glass-card styling with staggered motion animations
+
+**Part 3: Notification Toast System** (`/src/app/layout.tsx` + `/src/components/studio/dashboard.tsx`)
+- Updated layout.tsx Toaster from `position="top-right"` with custom inline styles to `theme="dark" position="bottom-right"` with `className="glass-strong border-border/30"`
+- Added `import { toast } from 'sonner'` to dashboard.tsx
+- Added welcome toast useEffect that fires once per session using sessionStorage:
+  - `toast.success('Welcome back to StudioOS!', { description: 'You have 8 unread messages and 2 tasks due today.' })`
+  - Uses `sessionStorage.getItem('tanti-welcome-toast')` to prevent re-showing
+
+**New icon imports added**: Megaphone, Calendar, Truck, Eye, Palette, UsersRound, Ticket, ShoppingCart
+
+- Ran `bun run lint` — passes cleanly with no errors
+- Dev server running normally on port 3000
+
+Stage Summary:
+- Dashboard now has 3 new visual sections: Studio Announcements, Upcoming Schedule, and welcome toast
+- Bottom row restructured to 3-column layout (Tasks + Quick Actions + Announcements)
+- Announcements panel with 4 categorized items and View All link
+- Schedule section with 5 color-coded events between Revenue Overview and Bottom Row
+- Toaster repositioned to bottom-right with dark theme and glass-strong styling
+- Welcome toast fires once per session on dashboard load
+- All existing functionality preserved
+- Lint passes cleanly

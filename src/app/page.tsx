@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard,
   Users,
@@ -249,7 +249,7 @@ export default function Home() {
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-h-screen overflow-hidden">
         {/* Top Bar */}
-        <header className="shrink-0 h-14 glass flex items-center justify-between px-6 border-b border-border/20 z-40">
+        <header className="shrink-0 h-14 glass top-bar-border flex items-center justify-between px-6 border-b border-border/20 z-40">
           <div className="flex items-center gap-3">
             {!sidebarOpen && (
               <Button
@@ -303,9 +303,18 @@ export default function Home() {
         </header>
 
         {/* Module Content */}
-        <div className="flex-1 overflow-auto">
-          {renderModule()}
-        </div>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeModule}
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.15 }}
+            className="flex-1 overflow-auto"
+          >
+            {renderModule()}
+          </motion.div>
+        </AnimatePresence>
       </main>
 
       {/* Command Palette Overlay */}

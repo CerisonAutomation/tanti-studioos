@@ -26,14 +26,10 @@ export default function RootLayout({
           <QueryProvider>
             {children}
             <Toaster
-              position="top-right"
+              theme="dark"
+              position="bottom-right"
               toastOptions={{
-                className: "glass-card",
-                style: {
-                  background: 'rgba(26, 18, 50, 0.9)',
-                  border: '1px solid rgba(58, 12, 163, 0.3)',
-                  color: '#F0ECF4',
-                },
+                className: 'glass-strong border-border/30',
               }}
             />
           </QueryProvider>

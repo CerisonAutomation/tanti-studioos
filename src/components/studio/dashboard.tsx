@@ -34,6 +34,14 @@ import {
   X,
   Sparkles,
   BarChart3,
+  Megaphone,
+  Calendar,
+  Truck,
+  Eye,
+  Palette,
+  UsersRound,
+  Ticket,
+  ShoppingCart,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -41,6 +49,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { useAppStore, type ActiveModule } from '@/lib/store';
+import { toast } from 'sonner';
 
 interface DashboardData {
   totalClients: number;
@@ -68,6 +77,128 @@ interface DashboardData {
     month: string;
     revenue: number;
   }>;
+}
+
+/* ─── Static Announcements Data ─── */
+const ANNOUNCEMENTS = [
+  {
+    id: '1',
+    title: 'New fabric catalog from Italy available',
+    description: 'Brenta Fabbrics 2026 collection now in our sample library. Request swatches through Procurement.',
+    date: '2026-03-04',
+    category: 'Design' as const,
+  },
+  {
+    id: '2',
+    title: 'Team meeting scheduled for Friday',
+    description: 'All-hands design review at 10:00 AM. Bring updated mood boards for Valletta penthouse project.',
+    date: '2026-03-06',
+    category: 'Team' as const,
+  },
+  {
+    id: '3',
+    title: 'Malta Design Week 2026 registration open',
+    description: 'Early-bird passes available until March 20. Studio gets 3 complimentary VIP tickets.',
+    date: '2026-03-03',
+    category: 'Events' as const,
+  },
+  {
+    id: '4',
+    title: 'Q2 supplier discount negotiated with Lumière Lighting',
+    description: '12% off all orders through June. Updated pricing now reflected in procurement catalog.',
+    date: '2026-03-02',
+    category: 'Procurement' as const,
+  },
+];
+
+type AnnouncementCategory = 'Design' | 'Team' | 'Events' | 'Procurement';
+
+function getCategoryStyle(category: AnnouncementCategory) {
+  const styles: Record<AnnouncementCategory, { badge: string; icon: React.ReactNode }> = {
+    Design: {
+      badge: 'bg-brand-cyan/15 text-brand-cyan border-brand-cyan/20',
+      icon: <Palette className="h-3 w-3" />,
+    },
+    Team: {
+      badge: 'bg-brand-indigo/15 text-brand-indigo-light border-brand-indigo/20',
+      icon: <UsersRound className="h-3 w-3" />,
+    },
+    Events: {
+      badge: 'bg-brand-gold/15 text-brand-gold border-brand-gold/20',
+      icon: <Ticket className="h-3 w-3" />,
+    },
+    Procurement: {
+      badge: 'bg-green-500/15 text-green-400 border-green-500/20',
+      icon: <ShoppingCart className="h-3 w-3" />,
+    },
+  };
+  return styles[category];
+}
+
+/* ─── Static Schedule Data ─── */
+const UPCOMING_SCHEDULE = [
+  {
+    id: 's1',
+    time: '09:00',
+    title: 'Client consultation — Sliema apartment',
+    type: 'Meeting' as const,
+  },
+  {
+    id: 's2',
+    time: '11:30',
+    title: 'Mood board review deadline',
+    type: 'Deadline' as const,
+  },
+  {
+    id: 's3',
+    time: '14:00',
+    title: 'Furniture delivery — Valletta penthouse',
+    type: 'Delivery' as const,
+  },
+  {
+    id: 's4',
+    time: '16:00',
+    title: 'Design review — Gozbo villa renovation',
+    type: 'Review' as const,
+  },
+  {
+    id: 's5',
+    time: '17:30',
+    title: 'Supplier call — Lumière Lighting Q2 terms',
+    type: 'Meeting' as const,
+  },
+];
+
+type ScheduleType = 'Meeting' | 'Deadline' | 'Delivery' | 'Review';
+
+function getScheduleBorder(type: ScheduleType): string {
+  const colors: Record<ScheduleType, string> = {
+    Meeting: 'border-l-brand-indigo',
+    Deadline: 'border-l-red-500',
+    Delivery: 'border-l-brand-cyan',
+    Review: 'border-l-brand-gold',
+  };
+  return colors[type];
+}
+
+function getScheduleIcon(type: ScheduleType): React.ReactNode {
+  const icons: Record<ScheduleType, React.ReactNode> = {
+    Meeting: <UsersRound className="h-3.5 w-3.5 text-brand-indigo-light" />,
+    Deadline: <AlertCircle className="h-3.5 w-3.5 text-red-400" />,
+    Delivery: <Truck className="h-3.5 w-3.5 text-brand-cyan" />,
+    Review: <Eye className="h-3.5 w-3.5 text-brand-gold" />,
+  };
+  return icons[type];
+}
+
+function getScheduleBadge(type: ScheduleType): string {
+  const styles: Record<ScheduleType, string> = {
+    Meeting: 'bg-brand-indigo/15 text-brand-indigo-light',
+    Deadline: 'bg-red-500/15 text-red-400',
+    Delivery: 'bg-brand-cyan/15 text-brand-cyan',
+    Review: 'bg-brand-gold/15 text-brand-gold',
+  };
+  return styles[type];
 }
 
 /* ─── Brand Colors for Charts ─── */
@@ -299,6 +430,16 @@ export default function DashboardModule() {
   useEffect(() => {
     fetchDashboard();
   }, [fetchDashboard]);
+
+  // Welcome toast — once per session
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !sessionStorage.getItem('tanti-welcome-toast')) {
+      sessionStorage.setItem('tanti-welcome-toast', '1');
+      toast.success('Welcome back to StudioOS!', {
+        description: 'You have 8 unread messages and 2 tasks due today.',
+      });
+    }
+  }, []);
 
   if (loading || !data) {
     return (
@@ -690,10 +831,46 @@ export default function DashboardModule() {
         </div>
       </motion.div>
 
-      {/* Bottom Row: Upcoming Tasks + Quick Actions */}
+      {/* Upcoming Schedule */}
+      <motion.div variants={itemVariants}>
+        <div className="flex items-center gap-3 mb-4">
+          <h3 className="text-lg font-bold font-['Space_Grotesk']">Upcoming Schedule</h3>
+          <Calendar className="h-4 w-4 text-brand-gold" />
+          <div className="gradient-line flex-1" />
+        </div>
+        <Card className="glass-card card-shine border-border/20 rounded-xl">
+          <CardContent className="p-5">
+            <div className="space-y-3">
+              {UPCOMING_SCHEDULE.map((event, i) => (
+                <motion.div
+                  key={event.id}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.2, delay: i * 0.05 }}
+                  className={`flex items-center gap-4 p-3 rounded-xl bg-brand-surface-light/30 hover:bg-brand-surface-light/50 transition-all group border-l-3 ${getScheduleBorder(event.type)}`}
+                >
+                  <div className="shrink-0 text-right w-14">
+                    <p className="text-sm font-mono font-semibold text-foreground">{event.time}</p>
+                  </div>
+                  <Separator orientation="vertical" className="h-8 bg-border/30" />
+                  <div className="flex-1 min-w-0 flex items-center gap-3">
+                    {getScheduleIcon(event.type)}
+                    <p className="text-sm font-medium truncate group-hover:text-brand-cyan transition-colors">{event.title}</p>
+                  </div>
+                  <Badge variant="outline" className={`${getScheduleBadge(event.type)} text-[10px] border-0 shrink-0`}>
+                    {event.type}
+                  </Badge>
+                </motion.div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Bottom Row: Upcoming Tasks + Quick Actions + Announcements */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Upcoming Tasks */}
-        <motion.div variants={itemVariants} className="lg:col-span-2">
+        <motion.div variants={itemVariants}>
           <Card className="glass-card border-border/20 rounded-xl">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
@@ -771,6 +948,54 @@ export default function DashboardModule() {
                   <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">{action.label}</span>
                 </button>
               ))}
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Studio Announcements */}
+        <motion.div variants={itemVariants}>
+          <Card className="glass-card card-shine border-border/20 rounded-xl h-full">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base font-['Space_Grotesk']">Studio Announcements</CardTitle>
+                <Megaphone className="h-4 w-4 text-brand-cyan" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3 max-h-80 overflow-y-auto">
+                {ANNOUNCEMENTS.map((announcement, i) => {
+                  const catStyle = getCategoryStyle(announcement.category);
+                  return (
+                    <motion.div
+                      key={announcement.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.2, delay: i * 0.05 }}
+                      className="p-3 rounded-xl bg-brand-surface-light/30 hover:bg-brand-surface-light/50 transition-all group"
+                    >
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <Badge variant="outline" className={`${catStyle.badge} text-[10px] gap-1 border px-1.5 py-0`}>
+                          {catStyle.icon}
+                          {announcement.category}
+                        </Badge>
+                        <span className="text-[10px] text-muted-foreground ml-auto">
+                          {new Date(announcement.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                        </span>
+                      </div>
+                      <p className="text-sm font-medium group-hover:text-brand-cyan transition-colors leading-snug">{announcement.title}</p>
+                      <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{announcement.description}</p>
+                    </motion.div>
+                  );
+                })}
+              </div>
+              <Separator className="bg-border/20 my-3" />
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full text-brand-cyan hover:text-brand-cyan hover:bg-brand-cyan/10"
+              >
+                View All <ArrowRight className="h-3 w-3 ml-1" />
+              </Button>
             </CardContent>
           </Card>
         </motion.div>

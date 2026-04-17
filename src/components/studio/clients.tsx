@@ -149,6 +149,7 @@ const channelColors: Record<string, string> = {
 export default function ClientsModule() {
   const { selectedClientId, setSelectedClientId } = useAppStore();
   const [clients, setClients] = useState<ClientListItem[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [clientDetail, setClientDetail] = useState<ClientDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -186,7 +187,46 @@ export default function ClientsModule() {
       const res = await fetch(`/api/clients?${params}`);
       if (res.ok) {
         const data = await res.json();
-        setClients(data);
+        // Handle multiple response formats:
+        // 1. Array directly: [...]
+        // 2. Object with clients: { clients: [...], total: N }
+        // 3. Object with data: { data: [...] }
+        let rawClients: unknown[];
+        let total = 0;
+
+        if (Array.isArray(data)) {
+          rawClients = data;
+          total = data.length;
+        } else if (data && typeof data === 'object') {
+          if (Array.isArray(data.clients)) {
+            rawClients = data.clients;
+            total = typeof data.total === 'number' ? data.total : data.clients.length;
+          } else if (Array.isArray(data.data)) {
+            rawClients = data.data;
+            total = data.data.length;
+          } else {
+            rawClients = [];
+          }
+        } else {
+          rawClients = [];
+        }
+
+        // Normalize _count field from either _count or separate count fields
+        const normalizedClients = rawClients.map((c: Record<string, unknown>) => {
+          const countObj = (c as Record<string, unknown>)._count as Record<string, unknown> | undefined;
+          return {
+            ...c,
+            _count: {
+              projects: (countObj?.projects as number) ?? (c.projectCount as number) ?? 0,
+              quotes: (countObj?.quotes as number) ?? (c.quoteCount as number) ?? 0,
+              messages: (countObj?.messages as number) ?? (c.messageCount as number) ?? 0,
+            },
+          };
+        }) as ClientListItem[];
+        setClients(normalizedClients);
+        setTotalCount(total);
+      } else {
+        console.error('Clients API returned status:', res.status);
       }
     } catch (err) {
       console.error('Failed to fetch clients:', err);
@@ -820,7 +860,7 @@ export default function ClientsModule() {
         <div>
           <h2 className="text-2xl font-bold font-['Space_Grotesk']">Clients</h2>
           <p className="text-sm text-muted-foreground mt-1">
-            {clients.length} client{clients.length !== 1 ? 's' : ''} total
+            {totalCount} client{totalCount !== 1 ? 's' : ''} total
           </p>
         </div>
         <div className="flex items-center gap-2">
