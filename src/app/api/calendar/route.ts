@@ -19,15 +19,11 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type');
-    const clientId = searchParams.get('clientId');
-    const projectId = searchParams.get('projectId');
     const startAfter = searchParams.get('startAfter');
     const startBefore = searchParams.get('startBefore');
 
     const where: Record<string, unknown> = {};
-    if (type) where.type = type;
-    if (clientId) where.clientId = clientId;
-    if (projectId) where.projectId = projectId;
+    if (type && type !== 'all') where.type = type;
     if (startAfter || startBefore) {
       where.startDate = {};
       if (startAfter) (where.startDate as Record<string, unknown>).gte = new Date(startAfter);
@@ -37,7 +33,6 @@ export async function GET(request: NextRequest) {
     const events = await db.calendarEvent.findMany({
       where,
       orderBy: { startDate: 'asc' },
-      include: { client: { select: { id: true, name: true } }, project: { select: { id: true, name: true, status: true } } },
     });
 
     return NextResponse.json({ events, total: events.length });
@@ -54,18 +49,16 @@ export async function POST(request: NextRequest) {
 
     const event = await db.calendarEvent.create({
       data: {
-        ...validated,
+        title: validated.title,
+        description: validated.description,
+        type: validated.type || 'meeting',
         startDate: new Date(validated.startDate),
         endDate: validated.endDate ? new Date(validated.endDate) : null,
-      },
-    });
-
-    await db.activity.create({
-      data: {
-        type: 'calendar_event_created',
-        description: `Calendar event "${event.title}" created`,
-        entityType: 'calendar_event',
-        entityId: event.id,
+        allDay: validated.allDay || false,
+        location: validated.location,
+        clientId: validated.clientId,
+        projectId: validated.projectId,
+        color: validated.color,
       },
     });
 

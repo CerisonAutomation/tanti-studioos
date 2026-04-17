@@ -18,10 +18,7 @@ const eventUpdateSchema = z.object({
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const event = await db.calendarEvent.findUnique({
-      where: { id },
-      include: { client: { select: { id: true, name: true } }, project: { select: { id: true, name: true, status: true } } },
-    });
+    const event = await db.calendarEvent.findUnique({ where: { id } });
     if (!event) return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     return NextResponse.json(event);
   } catch (error) {
@@ -36,21 +33,19 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const body = await request.json();
     const validated = eventUpdateSchema.parse(body);
 
-    const updateData: Record<string, unknown> = { ...validated };
-    if (validated.startDate) updateData.startDate = new Date(validated.startDate);
-    if (validated.endDate) updateData.endDate = new Date(validated.endDate);
+    const updateData: Record<string, unknown> = {};
+    if (validated.title !== undefined) updateData.title = validated.title;
+    if (validated.description !== undefined) updateData.description = validated.description;
+    if (validated.type !== undefined) updateData.type = validated.type;
+    if (validated.startDate !== undefined) updateData.startDate = new Date(validated.startDate);
+    if (validated.endDate !== undefined) updateData.endDate = validated.endDate ? new Date(validated.endDate) : null;
+    if (validated.allDay !== undefined) updateData.allDay = validated.allDay;
+    if (validated.location !== undefined) updateData.location = validated.location;
+    if (validated.clientId !== undefined) updateData.clientId = validated.clientId;
+    if (validated.projectId !== undefined) updateData.projectId = validated.projectId;
+    if (validated.color !== undefined) updateData.color = validated.color;
 
     const event = await db.calendarEvent.update({ where: { id }, data: updateData });
-
-    await db.activity.create({
-      data: {
-        type: 'calendar_event_updated',
-        description: `Calendar event "${event.title}" updated`,
-        entityType: 'calendar_event',
-        entityId: event.id,
-      },
-    });
-
     return NextResponse.json(event);
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -64,17 +59,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const event = await db.calendarEvent.delete({ where: { id } });
-
-    await db.activity.create({
-      data: {
-        type: 'calendar_event_deleted',
-        description: `Calendar event "${event.title}" deleted`,
-        entityType: 'calendar_event',
-        entityId: event.id,
-      },
-    });
-
+    await db.calendarEvent.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Calendar event DELETE error:', error);

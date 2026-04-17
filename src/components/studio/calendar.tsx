@@ -40,8 +40,6 @@ interface CalendarEvent {
   clientId?: string;
   projectId?: string;
   color?: string;
-  client?: { id: string; name: string };
-  project?: { id: string; name: string; status: string };
 }
 
 interface Project {
@@ -103,9 +101,9 @@ export default function CalendarModule() {
       if (filterType !== 'all') params.set('type', filterType);
       const res = await fetch(`/api/calendar?${params}`);
       const data = await res.json();
-      setEvents(data.events || []);
+      return data.events || [];
     } catch {
-      // silent
+      return [];
     }
   }, [currentDate, filterType]);
 
@@ -113,14 +111,22 @@ export default function CalendarModule() {
     try {
       const res = await fetch('/api/projects');
       const data = await res.json();
-      setProjects(data.projects || []);
+      return data.projects || [];
     } catch {
-      // silent
+      return [];
     }
   }, []);
 
   useEffect(() => {
-    Promise.all([fetchEvents(), fetchProjects()]).finally(() => setLoading(false));
+    let mounted = true;
+    Promise.all([fetchEvents(), fetchProjects()]).then(([evts, projs]) => {
+      if (mounted) {
+        setEvents(evts);
+        setProjects(projs);
+        setLoading(false);
+      }
+    });
+    return () => { mounted = false; };
   }, [fetchEvents, fetchProjects]);
 
   const prevMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
@@ -202,7 +208,7 @@ export default function CalendarModule() {
         toast.success('Event created');
       }
       setShowCreate(false);
-      fetchEvents();
+      fetchEvents().then(evts => setEvents(evts));
     } catch {
       toast.error('Failed to save event');
     }
@@ -213,7 +219,7 @@ export default function CalendarModule() {
       await fetch(`/api/calendar/${id}`, { method: 'DELETE' });
       toast.success('Event deleted');
       setSelectedEvent(null);
-      fetchEvents();
+      fetchEvents().then(evts => setEvents(evts));
     } catch {
       toast.error('Failed to delete event');
     }
@@ -474,7 +480,7 @@ export default function CalendarModule() {
                         <Clock className="h-3 w-3" />
                         <span>{new Date(event.startDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
                         {!event.allDay && <span>{new Date(event.startDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: false })}</span>}
-                        {event.project && <span className="text-brand-cyan">• {event.project.name}</span>}
+                        {event.projectId && <span className="text-brand-cyan">• {projects.find(p => p.id === event.projectId)?.name || 'Project'}</span>}
                       </div>
                     </div>
                     <Badge variant="outline" className="text-[10px] shrink-0" style={{ color: typeConf.color, borderColor: typeConf.color + '40' }}>
@@ -525,10 +531,10 @@ export default function CalendarModule() {
                         <span>{selectedEvent.location}</span>
                       </div>
                     )}
-                    {selectedEvent.project && (
+                    {selectedEvent.projectId && (
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <Flag className="h-4 w-4" />
-                        <span className="text-brand-cyan">{selectedEvent.project.name}</span>
+                        <span className="text-brand-cyan">{projects.find(p => p.id === selectedEvent.projectId)?.name || 'Project'}</span>
                       </div>
                     )}
                   </div>
