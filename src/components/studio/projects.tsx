@@ -158,6 +158,59 @@ const taskStatuses = ['todo', 'in-progress', 'review', 'done'] as const;
 
 const statusLabel = (s: string) => s.charAt(0).toUpperCase() + s.slice(1).replace('-', ' ');
 
+/* Progress Ring Component */
+function ProgressRing({ percent, size = 36, strokeWidth = 3, color = '#00F5D4' }: { percent: number; size?: number; strokeWidth?: number; color?: string }) {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = radius * 2 * Math.PI;
+  const offset = circumference - (percent / 100) * circumference;
+  return (
+    <svg width={size} height={size} className="progress-ring shrink-0">
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        fill="none"
+        stroke="rgba(58, 12, 163, 0.2)"
+        strokeWidth={strokeWidth}
+      />
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        fill="none"
+        stroke={color}
+        strokeWidth={strokeWidth}
+        strokeDasharray={circumference}
+        strokeDashoffset={offset}
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function getUrgencyInfo(days: number | null): { label: string; className: string; bgClass: string } {
+  if (days === null) return { label: '', className: '', bgClass: '' };
+  if (days < 0) return { label: `${Math.abs(days)}d overdue`, className: 'urgency-overdue', bgClass: 'urgency-bg-overdue' };
+  if (days <= 7) return { label: `${days}d left`, className: 'urgency-critical', bgClass: 'urgency-bg-critical' };
+  if (days <= 30) return { label: `${days}d left`, className: 'urgency-warning', bgClass: 'urgency-bg-warning' };
+  return { label: `${days}d left`, className: 'urgency-safe', bgClass: 'urgency-bg-safe' };
+}
+
+const statusBorderColors: Record<string, string> = {
+  planning: 'status-border-planning',
+  design: 'status-border-design',
+  procurement: 'status-border-procurement',
+  execution: 'status-border-execution',
+  completion: 'status-border-completion',
+  delivered: 'status-border-delivered',
+};
+
+function getProgressColor(percent: number): string {
+  if (percent > 85) return '#D4AF37';
+  if (percent > 60) return '#00F5D4';
+  return '#3A0CA3';
+}
+
 const priorityColors: Record<string, string> = {
   urgent: 'text-red-400',
   high: 'text-orange-400',
@@ -1172,8 +1225,8 @@ export default function ProjectsModule() {
                   <Badge className={`status-${col.status} text-[10px]`}>
                     {statusLabel(col.status)}
                   </Badge>
+                  <span className="kanban-count-bubble">{col.projects.length}</span>
                 </div>
-                <span className="text-xs text-muted-foreground">{col.projects.length}</span>
               </div>
 
               {/* Column Content */}
@@ -1189,11 +1242,11 @@ export default function ProjectsModule() {
                       transition={{ duration: 0.2, delay: i * 0.05 }}
                     >
                       <Card
-                        className="kanban-card glass-card cursor-pointer group"
+                        className={`kanban-card glass-card cursor-pointer group ${statusBorderColors[project.status] || ''}`}
                         onClick={() => setSelectedProjectId(project.id)}
                       >
                         <CardContent className="p-4 space-y-3">
-                          {/* Header with grip */}
+                          {/* Header with grip + progress ring */}
                           <div className="flex items-start gap-2">
                             <GripVertical className="h-4 w-4 text-muted-foreground/30 mt-0.5 flex-shrink-0" />
                             <div className="flex-1 min-w-0">
@@ -1204,6 +1257,14 @@ export default function ProjectsModule() {
                                 {project.client.name}
                               </p>
                             </div>
+                            {project.budget && (
+                              <ProgressRing
+                                percent={getBudgetPercent(project.spent, project.budget)}
+                                size={32}
+                                strokeWidth={3}
+                                color={getProgressColor(getBudgetPercent(project.spent, project.budget))}
+                              />
+                            )}
                           </div>
 
                           {/* Priority */}
@@ -1232,17 +1293,18 @@ export default function ProjectsModule() {
                             </div>
                           )}
 
-                          {/* Days Remaining */}
-                          {days !== null && (
-                            <div className="flex items-center justify-between pl-6 text-[10px]">
-                              <span className="text-muted-foreground">
-                                {days < 0
-                                  ? `${Math.abs(days)}d overdue`
-                                  : `${days}d remaining`}
-                              </span>
-                              <ChevronRight className="h-3 w-3 text-muted-foreground/50 group-hover:text-brand-cyan transition-colors" />
-                            </div>
-                          )}
+                          {/* Days Remaining - with urgency indicator */}
+                          {days !== null && (() => {
+                            const urgency = getUrgencyInfo(days);
+                            return (
+                              <div className="flex items-center justify-between pl-6 text-[10px]">
+                                <span className={`px-1.5 py-0.5 rounded ${urgency.bgClass} ${urgency.className} font-medium`}>
+                                  {urgency.label}
+                                </span>
+                                <ChevronRight className="h-3 w-3 text-muted-foreground/50 group-hover:text-brand-cyan transition-colors" />
+                              </div>
+                            );
+                          })()}
                         </CardContent>
                       </Card>
                     </motion.div>

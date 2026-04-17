@@ -101,13 +101,14 @@ const statusConfig: Record<QuoteStatus, { label: string; class: string; icon: Re
   revision: { label: 'Revision', class: 'status-planning', icon: <Edit3 className="h-3 w-3" /> },
 };
 
-const tierConfig: Record<string, { label: string; color: string; accent: string; glow: string; icon: React.ReactNode }> = {
+const tierConfig: Record<string, { label: string; color: string; accent: string; glow: string; icon: React.ReactNode; badgeClass: string }> = {
   good: {
     label: 'Good',
     color: 'text-brand-indigo',
     accent: 'border-brand-indigo/40',
     glow: 'glow-indigo',
     icon: <Star className="h-4 w-4" />,
+    badgeClass: 'badge-tier-good',
   },
   better: {
     label: 'Better',
@@ -115,6 +116,7 @@ const tierConfig: Record<string, { label: string; color: string; accent: string;
     accent: 'border-brand-cyan/40',
     glow: 'glow-cyan',
     icon: <Sparkles className="h-4 w-4" />,
+    badgeClass: 'badge-tier-better',
   },
   best: {
     label: 'Best',
@@ -122,6 +124,7 @@ const tierConfig: Record<string, { label: string; color: string; accent: string;
     accent: 'border-brand-gold/40',
     glow: 'glow-gold',
     icon: <Crown className="h-4 w-4" />,
+    badgeClass: 'badge-tier-best',
   },
 };
 
@@ -135,6 +138,38 @@ const parseItems = (itemsStr: string): LineItem[] => {
     return [];
   }
 };
+
+/* Status Step Indicator */
+const QUOTE_STATUS_STEPS = ['draft', 'sent', 'viewed', 'accepted'] as const;
+
+function StatusStepIndicator({ currentStatus }: { currentStatus: string }) {
+  const currentIndex = QUOTE_STATUS_STEPS.indexOf(currentStatus as typeof QUOTE_STATUS_STEPS[number]);
+  const isRejected = currentStatus === 'rejected';
+  const isRevision = currentStatus === 'revision';
+
+  return (
+    <div className="status-steps">
+      {QUOTE_STATUS_STEPS.map((step, i) => {
+        const isCompleted = !isRejected && !isRevision && i < currentIndex;
+        const isActive = !isRejected && !isRevision && step === currentStatus;
+        return (
+          <div key={step} className="status-step">
+            <div
+              className={`status-step-dot ${
+                isCompleted ? 'completed' : isActive ? 'active' : ''
+              } ${isRejected || isRevision ? '!border-red-400/50' : ''}`}
+            />
+            {i < QUOTE_STATUS_STEPS.length - 1 && (
+              <div className={`status-step-line ${
+                isCompleted ? 'active' : ''
+              }`} />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 export default function QuotesModule() {
   const [quotes, setQuotes] = useState<Quote[]>([]);
@@ -355,7 +390,27 @@ export default function QuotesModule() {
             {tierConfig[selectedQuote.tier]?.icon}
             <span className="ml-1">{tierConfig[selectedQuote.tier]?.label}</span>
           </Badge>
+          {/* Metallic tier badge */}
+          <span className={tierConfig[selectedQuote.tier]?.badgeClass || 'badge-tier-good'}>
+            {tierConfig[selectedQuote.tier]?.label}
+          </span>
         </div>
+
+        {/* Status Step Indicator */}
+        <Card className="glass-card glass-gradient-overlay border-border/20 rounded-xl">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-muted-foreground mb-2">Quote Progress</p>
+                <StatusStepIndicator currentStatus={selectedQuote.status} />
+              </div>
+              <Badge className={statusConfig[selectedQuote.status as QuoteStatus]?.class || 'status-draft'}>
+                {statusConfig[selectedQuote.status as QuoteStatus]?.icon}
+                <span className="ml-1">{statusConfig[selectedQuote.status as QuoteStatus]?.label || selectedQuote.status}</span>
+              </Badge>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Tier Comparison */}
         {hasMultipleTiers && (
@@ -456,9 +511,9 @@ export default function QuotesModule() {
               <span className="font-medium w-28 text-right">{formatCurrency(selectedQuote.tax)}</span>
             </div>
             <Separator className="bg-border/30 my-1 w-full max-w-64" />
-            <div className="flex gap-8 text-base">
+            <div className="flex gap-8 text-lg">
               <span className="font-semibold">Total:</span>
-              <span className="font-bold text-brand-cyan w-28 text-right">
+              <span className="font-bold gradient-text-cyan w-28 text-right sparkle-text">
                 {formatCurrency(selectedQuote.total)}
               </span>
             </div>
@@ -672,7 +727,7 @@ export default function QuotesModule() {
                     onClick={() => setSelectedQuote(quote)}
                     className="cursor-pointer"
                   >
-                    <Card className="glass-card glass-hover hover:border-brand-indigo/30 transition-all rounded-xl">
+                    <Card className="glass-card glass-gradient-overlay glass-hover hover:border-brand-indigo/30 transition-all rounded-xl">
                       <CardContent className="p-4">
                         <div className="flex items-center gap-4">
                           <div className={`flex items-center justify-center h-10 w-10 rounded-lg bg-brand-surface ${tierCfg.color}`}>

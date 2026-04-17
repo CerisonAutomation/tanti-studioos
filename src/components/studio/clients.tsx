@@ -134,6 +134,34 @@ const sourceOptions = ['website', 'referral', 'instagram', 'exhibition', 'cold-o
 
 const statusLabel = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
+/* Hash-based gradient for avatar initials */
+function hashString(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return Math.abs(hash);
+}
+
+function getAvatarGradient(name: string): string {
+  const hash = hashString(name);
+  const gradients = [
+    'from-brand-indigo to-brand-indigo-light',
+    'from-brand-cyan-dark to-brand-cyan',
+    'from-brand-gold to-amber-400',
+    'from-purple-500 to-pink-500',
+    'from-brand-indigo to-brand-cyan',
+    'from-brand-indigo-light to-brand-gold',
+  ];
+  return gradients[hash % gradients.length];
+}
+
+function getInitials(name: string): string {
+  const parts = name.split(' ');
+  if (parts.length >= 2) return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+  return name.charAt(0).toUpperCase();
+}
+
 const channelIcons: Record<string, string> = {
   email: '📧',
   whatsapp: '💬',
@@ -913,6 +941,11 @@ export default function ClientsModule() {
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-[140px] bg-brand-surface-light border-brand-indigo/20">
               <SelectValue placeholder="Status" />
+              {statusFilter !== 'all' && (
+                <span className="ml-1 kanban-count-bubble text-[9px]">
+                  {clients.filter(c => c.status === statusFilter).length}
+                </span>
+              )}
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Statuses</SelectItem>
@@ -986,21 +1019,26 @@ export default function ClientsModule() {
                 transition={{ duration: 0.2, delay: i * 0.03 }}
               >
                 <Card
-                  className="glass-card card-shine glass-hover cursor-pointer rounded-xl transition-all group"
+                  className="glass-card card-shine card-lift cursor-pointer rounded-xl transition-all group"
                   onClick={() => setSelectedClientId(client.id)}
                 >
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-3">
-                        <div className="h-9 w-9 rounded-full bg-brand-indigo/30 border border-brand-indigo/30 flex items-center justify-center group-hover:border-brand-cyan/50 transition-colors">
-                          <span className="text-sm font-bold text-brand-cyan">
-                            {client.name.charAt(0)}
+                        <div className={`h-9 w-9 rounded-full bg-gradient-to-br ${getAvatarGradient(client.name)} flex items-center justify-center group-hover:scale-110 transition-transform shrink-0 ${client.status === 'active' ? 'status-pulse' : ''}`}>
+                          <span className="text-sm font-bold text-white">
+                            {getInitials(client.name)}
                           </span>
                         </div>
                         <div>
-                          <p className="font-medium text-sm group-hover:text-brand-cyan transition-colors">
-                            {client.name}
-                          </p>
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium text-sm group-hover:text-brand-cyan transition-colors">
+                              {client.name}
+                            </p>
+                            {(client.budgetMax ?? 0) > 150000 && (
+                              <span className="badge-vip">VIP</span>
+                            )}
+                          </div>
                           <p className="text-xs text-muted-foreground">{client.email}</p>
                         </div>
                       </div>

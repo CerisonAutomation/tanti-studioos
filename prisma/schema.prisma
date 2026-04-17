@@ -39,6 +39,7 @@ model Client {
   quotes     Quote[]
   messages   Message[]
   documents  Document[]
+  expenses   Expense[]
 }
 
 model Project {
@@ -62,6 +63,8 @@ model Project {
   documents  Document[]
   floorplans Floorplan[]
   tasks      Task[]
+  moodBoards MoodBoard[]
+  expenses   Expense[]
 }
 
 model Task {
@@ -186,4 +189,39 @@ model KnowledgeEntry {
   tags      String   @default("[]")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model MoodBoard {
+  id           String   @id @default(cuid())
+  title        String
+  description  String?
+  projectId    String?
+  style        String   @default("contemporary")
+  colorPalette String   @default("[]")
+  images       String   @default("[]")
+  notes        String?
+  isPublic     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  project Project? @relation(fields: [projectId], references: [id])
+}
+
+model Expense {
+  id          String   @id @default(cuid())
+  description String
+  amount      Float
+  category    String   @default("materials")
+  vendor      String?
+  projectId   String?
+  clientId    String?
+  status      String   @default("pending")
+  date        DateTime @default(now())
+  receiptUrl  String?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  project Project? @relation(fields: [projectId], references: [id])
+  client  Client?  @relation(fields: [clientId], references: [id])
 }

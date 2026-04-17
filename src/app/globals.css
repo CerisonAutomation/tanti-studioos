@@ -766,6 +766,399 @@ button, [role="button"] {
   transition: opacity 0.15s ease;
 }
 
+/* ─── Glow Border (animated gradient border glow) ─── */
+.glow-border {
+  position: relative;
+}
+
+.glow-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: linear-gradient(135deg, #3A0CA3, #00F5D4, #D4AF37, #00F5D4, #3A0CA3);
+  background-size: 400% 400%;
+  animation: glowBorderPulse 3s ease-in-out infinite;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.6;
+  transition: opacity 0.3s ease;
+}
+
+.glow-border:hover::before {
+  opacity: 1;
+}
+
+@keyframes glowBorderPulse {
+  0%, 100% { background-position: 0% 50%; opacity: 0.4; }
+  50% { background-position: 100% 50%; opacity: 0.8; }
+}
+
+/* ─── Shimmer Text (animated text shimmer effect) ─── */
+.shimmer-text {
+  background: linear-gradient(
+    90deg,
+    #F0ECF4 0%,
+    #00F5D4 25%,
+    #F0ECF4 50%,
+    #D4AF37 75%,
+    #F0ECF4 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmerText 3s ease-in-out infinite;
+}
+
+@keyframes shimmerText {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+/* ─── Status Pulse (pulsing dot for active items) ─── */
+.status-pulse {
+  position: relative;
+}
+
+.status-pulse::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #00F5D4;
+  animation: statusPulseDot 2s ease-in-out infinite;
+}
+
+@keyframes statusPulseDot {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(0, 245, 212, 0.6);
+    opacity: 1;
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(0, 245, 212, 0);
+    opacity: 0.7;
+  }
+}
+
+/* ─── Float Animation (subtle floating) ─── */
+.float-animation {
+  animation: floatSubtle 4s ease-in-out infinite;
+}
+
+@keyframes floatSubtle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+/* ─── Gradient Text: Gold ─── */
+.gradient-text-gold {
+  background: linear-gradient(135deg, #D4AF37 0%, #FFD700 40%, #D4AF37 60%, #B8962E 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Gradient Text: Cyan ─── */
+.gradient-text-cyan {
+  background: linear-gradient(135deg, #00F5D4 0%, #00C4A7 40%, #00F5D4 60%, #00B4D8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Card Lift (hover lift effect with shadow) ─── */
+.card-lift {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.card-lift:hover {
+  transform: translateY(-3px) scale(1.01);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.4),
+    0 4px 12px rgba(0, 245, 212, 0.08);
+}
+
+/* ─── VIP Badge (gold shimmer) ─── */
+.badge-vip {
+  background: linear-gradient(135deg, #D4AF37, #FFD700, #D4AF37);
+  background-size: 200% 200%;
+  animation: goldShimmer 2s ease-in-out infinite;
+  color: #0A0612;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  line-height: 1.3;
+}
+
+/* ─── Tier Badge: Good (bronze metallic) ─── */
+.badge-tier-good {
+  background: linear-gradient(135deg, #CD7F32, #E8A862, #CD7F32, #A0652A);
+  background-size: 200% 200%;
+  animation: bronzeShimmer 3s ease-in-out infinite;
+  color: #1A0F00;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(205, 127, 50, 0.4);
+}
+
+@keyframes bronzeShimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ─── Tier Badge: Better (silver metallic) ─── */
+.badge-tier-better {
+  background: linear-gradient(135deg, #C0C0C0, #E8E8E8, #C0C0C0, #A0A0A0);
+  background-size: 200% 200%;
+  animation: silverShimmer 3s ease-in-out infinite;
+  color: #1A1A2E;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(192, 192, 192, 0.4);
+}
+
+@keyframes silverShimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ─── Tier Badge: Best (gold metallic) ─── */
+.badge-tier-best {
+  background: linear-gradient(135deg, #D4AF37, #FFD700, #D4AF37, #B8962E);
+  background-size: 200% 200%;
+  animation: goldShimmer 3s ease-in-out infinite;
+  color: #1A0F00;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(212, 175, 55, 0.4);
+}
+
+/* ─── Progress Ring (circular progress) ─── */
+.progress-ring {
+  transform: rotate(-90deg);
+}
+
+.progress-ring circle {
+  transition: stroke-dashoffset 0.6s ease;
+}
+
+/* ─── Timeline Connector (connected timeline dots) ─── */
+.timeline-connector {
+  position: relative;
+}
+
+.timeline-connector::before {
+  content: '';
+  position: absolute;
+  left: 11px;
+  top: 24px;
+  bottom: -8px;
+  width: 2px;
+  background: linear-gradient(180deg, rgba(58, 12, 163, 0.4), rgba(0, 245, 212, 0.2));
+}
+
+.timeline-connector:last-child::before {
+  display: none;
+}
+
+/* ─── Sparkle Animation (for special numbers) ─── */
+@keyframes sparkle {
+  0%, 100% { opacity: 1; filter: brightness(1); }
+  50% { opacity: 0.85; filter: brightness(1.3); }
+}
+
+.sparkle-text {
+  animation: sparkle 2s ease-in-out infinite;
+  text-shadow: 0 0 12px rgba(0, 245, 212, 0.3), 0 0 24px rgba(212, 175, 55, 0.15);
+}
+
+/* ─── Dot Background Pattern ─── */
+.dot-pattern {
+  background-image: radial-gradient(circle, rgba(58, 12, 163, 0.15) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* ─── Status Step Indicator ─── */
+.status-steps {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.status-step {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-step-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid rgba(155, 143, 194, 0.3);
+  background: transparent;
+  transition: all 0.3s ease;
+}
+
+.status-step-dot.active {
+  background: #00F5D4;
+  border-color: #00F5D4;
+  box-shadow: 0 0 8px rgba(0, 245, 212, 0.4);
+}
+
+.status-step-dot.completed {
+  background: #3A0CA3;
+  border-color: #5E17C4;
+}
+
+.status-step-line {
+  width: 24px;
+  height: 2px;
+  background: rgba(155, 143, 194, 0.2);
+  transition: background 0.3s ease;
+}
+
+.status-step-line.active {
+  background: linear-gradient(90deg, #5E17C4, #00F5D4);
+}
+
+/* ─── Sidebar Active Glowing Left Border ─── */
+.sidebar-active-glow {
+  position: relative;
+}
+
+.sidebar-active-glow::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  border-radius: 0 4px 4px 0;
+  background: linear-gradient(180deg, #00F5D4, #3A0CA3);
+  box-shadow: 0 0 12px rgba(0, 245, 212, 0.5), 0 0 4px rgba(58, 12, 163, 0.3);
+}
+
+/* ─── Breadcrumb ─── */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+
+.breadcrumb-separator {
+  color: rgba(155, 143, 194, 0.3);
+}
+
+.breadcrumb-current {
+  color: #00F5D4;
+  font-weight: 500;
+}
+
+/* ─── Animated Gradient Line (top bar) ─── */
+.animated-gradient-line {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #3A0CA3, #00F5D4, #D4AF37, #00F5D4, #3A0CA3, transparent);
+  background-size: 200% 100%;
+  animation: gradientLineFlow 4s linear infinite;
+}
+
+@keyframes gradientLineFlow {
+  0% { background-position: 0% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ─── Module Transition ─── */
+.module-enter {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+.module-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+/* ─── Kanban Column Count Bubble ─── */
+.kanban-count-bubble {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 0 6px;
+  background: rgba(58, 12, 163, 0.3);
+  color: #00F5D4;
+  border: 1px solid rgba(0, 245, 212, 0.2);
+  animation: countBubblePop 0.3s ease-out;
+}
+
+@keyframes countBubblePop {
+  0% { transform: scale(0.5); opacity: 0; }
+  70% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* ─── Project Status Left Border Colors ─── */
+.status-border-planning { border-left: 3px solid #3A0CA3; }
+.status-border-design { border-left: 3px solid #5E17C4; }
+.status-border-procurement { border-left: 3px solid #00F5D4; }
+.status-border-execution { border-left: 3px solid #D4AF37; }
+.status-border-completion { border-left: 3px solid #22C55E; }
+.status-border-delivered { border-left: 3px solid #00B4D8; }
+
+/* ─── Glass Gradient Overlay ─── */
+.glass-gradient-overlay {
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-gradient-overlay::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(135deg, transparent 0%, rgba(0, 245, 212, 0.03) 50%, rgba(212, 175, 55, 0.02) 100%);
+  pointer-events: none;
+}
+
+/* ─── Urgency Colors for Deadline ─── */
+.urgency-overdue { color: #FF4757; }
+.urgency-critical { color: #FF6B6B; }
+.urgency-warning { color: #D4AF37; }
+.urgency-safe { color: #00F5D4; }
+
+.urgency-bg-overdue { background: rgba(255, 71, 87, 0.1); border: 1px solid rgba(255, 71, 87, 0.2); }
+.urgency-bg-critical { background: rgba(255, 107, 107, 0.1); border: 1px solid rgba(255, 107, 107, 0.2); }
+.urgency-bg-warning { background: rgba(212, 175, 55, 0.1); border: 1px solid rgba(212, 175, 55, 0.2); }
+.urgency-bg-safe { background: rgba(0, 245, 212, 0.1); border: 1px solid rgba(0, 245, 212, 0.2); }
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *, ::before, ::after {

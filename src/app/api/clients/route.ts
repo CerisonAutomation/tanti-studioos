@@ -38,20 +38,29 @@ export async function GET(request: NextRequest) {
 
     const clients = await db.client.findMany({
       where,
-      include: {
-        _count: { select: { projects: true, quotes: true, messages: true } },
-      },
       orderBy: { [sort]: order },
     });
 
-    const clientsWithActivity = clients.map((client) => ({
+    // Get counts separately to avoid complex joins
+    const clientIds = clients.map(c => c.id);
+    const [projectCounts, quoteCounts, messageCounts] = await Promise.all([
+      db.project.groupBy({ by: ['clientId'], where: { clientId: { in: clientIds } }, _count: true }),
+      db.quote.groupBy({ by: ['clientId'], where: { clientId: { in: clientIds } }, _count: true }),
+      db.message.groupBy({ by: ['clientId'], where: { clientId: { in: clientIds } }, _count: true }),
+    ]);
+
+    const projectMap = Object.fromEntries(projectCounts.map(p => [p.clientId, p._count]));
+    const quoteMap = Object.fromEntries(quoteCounts.map(q => [q.clientId, q._count]));
+    const messageMap = Object.fromEntries(messageCounts.map(m => [m.clientId, m._count]));
+
+    const clientsWithCounts = clients.map((client) => ({
       ...client,
-      projectCount: client._count.projects,
-      quoteCount: client._count.quotes,
-      messageCount: client._count.messages,
+      projectCount: projectMap[client.id] || 0,
+      quoteCount: quoteMap[client.id] || 0,
+      messageCount: messageMap[client.id] || 0,
     }));
 
-    return NextResponse.json({ clients: clientsWithActivity, total: clientsWithActivity.length });
+    return NextResponse.json({ clients: clientsWithCounts, total: clientsWithCounts.length });
   } catch (error) {
     console.error('Error fetching clients:', error);
     return NextResponse.json(

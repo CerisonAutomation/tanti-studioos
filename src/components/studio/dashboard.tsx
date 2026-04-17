@@ -347,8 +347,9 @@ function OnboardingBanner() {
       animate={{ opacity: 1, y: 0 }}
       className="glass-card rounded-2xl p-6 border border-border/20 relative overflow-hidden"
     >
-      {/* Background gradient accent */}
-      <div className="absolute inset-0 bg-gradient-to-r from-brand-indigo/10 via-transparent to-brand-cyan/10 pointer-events-none" />
+      {/* Background gradient accent - more visually striking */}
+      <div className="absolute inset-0 bg-gradient-to-br from-brand-indigo/20 via-brand-indigo/5 to-brand-cyan/15 pointer-events-none" />
+      <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-brand-gold/5 to-transparent pointer-events-none" />
 
       <div className="relative">
         <div className="flex items-start justify-between mb-5">
@@ -472,7 +473,7 @@ export default function DashboardModule() {
     >
       {/* Header */}
       <motion.div variants={itemVariants} className="flex items-center justify-between">
-        <div>
+        <div className="dot-pattern -m-6 mb-0 p-6 pb-0">
           <h2 className="text-2xl font-bold font-['Space_Grotesk']">Welcome to StudioOS</h2>
           <div className="gradient-line w-48" />
           <p className="text-muted-foreground mt-2 text-sm">Tanti Interiors — Luxury Design Management Platform</p>
@@ -493,9 +494,46 @@ export default function DashboardModule() {
         <OnboardingBanner />
       </motion.div>
 
+      {/* Today's Focus Card */}
+      <motion.div variants={itemVariants}>
+        <Card className="glass-card glow-border border-brand-gold/20 rounded-xl overflow-hidden">
+          <CardContent className="p-4 flex items-center gap-4">
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-brand-gold to-amber-400 flex items-center justify-center shrink-0 float-animation">
+              <AlertCircle className="h-5 w-5 text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-0.5">
+                <p className="text-xs font-medium text-brand-gold uppercase tracking-wider">Today's Focus</p>
+                <span className="h-1 w-1 rounded-full bg-brand-gold" />
+                <p className="text-xs text-muted-foreground">Urgent</p>
+              </div>
+              <p className="text-sm font-medium truncate">{tasks.length > 0 ? tasks[0].title : 'No urgent tasks today'}</p>
+              {tasks.length > 0 && tasks[0].project && (
+                <p className="text-xs text-muted-foreground mt-0.5">{tasks[0].project.name}</p>
+              )}
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              {tasks.length > 0 && tasks[0].dueDate && (
+                <Badge variant="outline" className="urgency-bg-warning text-brand-gold text-[10px] border-0">
+                  Due {new Date(tasks[0].dueDate).toLocaleDateString()}
+                </Badge>
+              )}
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setActiveModule('projects')}
+                className="text-brand-cyan hover:text-brand-cyan text-xs"
+              >
+                View <ArrowRight className="h-3 w-3 ml-1" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
       {/* KPI Cards */}
       <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="glass-card card-shine glass-hover border-border/20 rounded-xl cursor-pointer" onClick={() => setActiveModule('projects')}>
+        <Card className="glass-card glow-border card-shine glass-hover border-border/20 rounded-xl cursor-pointer" onClick={() => setActiveModule('projects')}>
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">Total Revenue</p>
@@ -503,7 +541,7 @@ export default function DashboardModule() {
                 <DollarSign className="h-4 w-4 text-brand-cyan" />
               </div>
             </div>
-            <p className="text-2xl font-bold font-['Space_Grotesk'] mt-2">
+            <p className="text-2xl font-bold font-['Space_Grotesk'] mt-2 sparkle-text">
               <AnimatedNumber value={data.acceptedQuotesValue || data.totalRevenue || 0} format="currency" />
             </p>
             <div className="flex items-center gap-1 mt-1">
@@ -513,7 +551,7 @@ export default function DashboardModule() {
           </CardContent>
         </Card>
 
-        <Card className="glass-card card-shine glass-hover border-border/20 rounded-xl cursor-pointer" onClick={() => setActiveModule('projects')}>
+        <Card className="glass-card glow-border card-shine glass-hover border-border/20 rounded-xl cursor-pointer" onClick={() => setActiveModule('projects')}>
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">Active Projects</p>
@@ -530,7 +568,7 @@ export default function DashboardModule() {
           </CardContent>
         </Card>
 
-        <Card className="glass-card card-shine glass-hover border-border/20 rounded-xl cursor-pointer" onClick={() => setActiveModule('clients')}>
+        <Card className="glass-card glow-border card-shine glass-hover border-border/20 rounded-xl cursor-pointer" onClick={() => setActiveModule('clients')}>
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">Active Clients</p>
@@ -549,7 +587,7 @@ export default function DashboardModule() {
           </CardContent>
         </Card>
 
-        <Card className="glass-card card-shine glass-hover border-border/20 rounded-xl cursor-pointer" onClick={() => setActiveModule('inbox')}>
+        <Card className="glass-card glow-border card-shine glass-hover border-border/20 rounded-xl cursor-pointer" onClick={() => setActiveModule('inbox')}>
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">Unread Messages</p>
@@ -840,15 +878,24 @@ export default function DashboardModule() {
         </div>
         <Card className="glass-card card-shine border-border/20 rounded-xl">
           <CardContent className="p-5">
-            <div className="space-y-3">
+            <div className="space-y-3 relative pl-6">
+              {/* Timeline connecting line for schedule */}
+              <div className="absolute left-[11px] top-4 bottom-4 w-0.5 bg-gradient-to-b from-brand-indigo/40 via-brand-cyan/30 to-brand-gold/20" />
               {UPCOMING_SCHEDULE.map((event, i) => (
                 <motion.div
                   key={event.id}
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.2, delay: i * 0.05 }}
-                  className={`flex items-center gap-4 p-3 rounded-xl bg-brand-surface-light/30 hover:bg-brand-surface-light/50 transition-all group border-l-3 ${getScheduleBorder(event.type)}`}
+                  className={`relative flex items-center gap-4 p-3 rounded-xl bg-brand-surface-light/30 hover:bg-brand-surface-light/50 transition-all group border-l-3 ${getScheduleBorder(event.type)}`}
                 >
+                  {/* Timeline dot */}
+                  <div className={`absolute -left-6 top-1/2 -translate-y-1/2 h-2.5 w-2.5 rounded-full border-2 z-10 ${
+                    event.type === 'Meeting' ? 'border-brand-indigo bg-brand-indigo/40' :
+                    event.type === 'Deadline' ? 'border-red-400 bg-red-400/40' :
+                    event.type === 'Delivery' ? 'border-brand-cyan bg-brand-cyan/40' :
+                    'border-brand-gold bg-brand-gold/40'
+                  }`} />
                   <div className="shrink-0 text-right w-14">
                     <p className="text-sm font-mono font-semibold text-foreground">{event.time}</p>
                   </div>
