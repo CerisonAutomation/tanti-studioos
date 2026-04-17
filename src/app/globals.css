@@ -1159,6 +1159,249 @@ button, [role="button"] {
 .urgency-bg-warning { background: rgba(212, 175, 55, 0.1); border: 1px solid rgba(212, 175, 55, 0.2); }
 .urgency-bg-safe { background: rgba(0, 245, 212, 0.1); border: 1px solid rgba(0, 245, 212, 0.2); }
 
+/* ─── Glass Premium (ultra luxury glass effect) ─── */
+.glass-premium {
+  background: linear-gradient(135deg, rgba(26, 18, 50, 0.85) 0%, rgba(37, 27, 66, 0.7) 50%, rgba(26, 18, 50, 0.85) 100%);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border: 1px solid rgba(0, 245, 212, 0.15);
+  box-shadow:
+    0 16px 48px rgba(0, 0, 0, 0.4),
+    0 8px 24px rgba(0, 0, 0, 0.25),
+    0 2px 8px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* ─── Card Interactive (hover scale + glow + border change) ─── */
+.card-interactive {
+  transition: all 0.25s ease;
+  cursor: pointer;
+}
+
+.card-interactive:hover {
+  transform: translateY(-2px) scale(1.005);
+  border-color: rgba(0, 245, 212, 0.25);
+  box-shadow:
+    0 12px 36px rgba(0, 0, 0, 0.35),
+    0 0 20px rgba(0, 245, 212, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* ─── Text Gradient Brand (all 3 brand colors) ─── */
+.text-gradient-brand {
+  background: linear-gradient(135deg, #3A0CA3 0%, #00F5D4 50%, #D4AF37 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Badge Glow (soft outer glow matching badge color) ─── */
+.badge-glow-cyan {
+  box-shadow: 0 0 8px rgba(0, 245, 212, 0.3), 0 0 16px rgba(0, 245, 212, 0.1);
+}
+
+.badge-glow-gold {
+  box-shadow: 0 0 8px rgba(212, 175, 55, 0.3), 0 0 16px rgba(212, 175, 55, 0.1);
+}
+
+.badge-glow-indigo {
+  box-shadow: 0 0 8px rgba(58, 12, 163, 0.3), 0 0 16px rgba(58, 12, 163, 0.1);
+}
+
+/* ─── Section Divider (decorative with gradient and dots) ─── */
+.section-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(58, 12, 163, 0.4), rgba(0, 245, 212, 0.2), rgba(212, 175, 55, 0.15), rgba(0, 245, 212, 0.2), rgba(58, 12, 163, 0.4), transparent);
+  position: relative;
+  margin: 1rem 0;
+}
+
+.section-divider::before,
+.section-divider::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #00F5D4;
+  box-shadow: 0 0 6px rgba(0, 245, 212, 0.5);
+}
+
+.section-divider::before { left: 20%; }
+.section-divider::after { right: 20%; background: #D4AF37; box-shadow: 0 0 6px rgba(212, 175, 55, 0.5); }
+
+/* ─── Avatar Gradient (avatar with gradient border) ─── */
+.avatar-gradient {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3A0CA3, #00F5D4, #D4AF37);
+  padding: 2px;
+}
+
+.avatar-gradient > * {
+  border-radius: 50%;
+  background: #1A1232;
+}
+
+/* ─── Pulse Dot (small pulsing dot indicator) ─── */
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #00F5D4;
+  animation: pulseDot 2s ease-in-out infinite;
+}
+
+.pulse-dot-gold {
+  background: #D4AF37;
+  animation: pulseDotGold 2s ease-in-out infinite;
+}
+
+.pulse-dot-red {
+  background: #FF4757;
+  animation: pulseDotRed 2s ease-in-out infinite;
+}
+
+@keyframes pulseDot {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0, 245, 212, 0.5); }
+  50% { box-shadow: 0 0 0 6px rgba(0, 245, 212, 0); }
+}
+
+@keyframes pulseDotGold {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.5); }
+  50% { box-shadow: 0 0 0 6px rgba(212, 175, 55, 0); }
+}
+
+@keyframes pulseDotRed {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.5); }
+  50% { box-shadow: 0 0 0 6px rgba(255, 71, 87, 0); }
+}
+
+/* ─── Calendar Day Cell ─── */
+.calendar-day {
+  min-height: 100px;
+  border: 1px solid rgba(58, 12, 163, 0.1);
+  transition: all 0.15s ease;
+}
+
+.calendar-day:hover {
+  background: rgba(26, 18, 50, 0.5);
+  border-color: rgba(0, 245, 212, 0.15);
+}
+
+.calendar-day-today {
+  background: rgba(0, 245, 212, 0.05);
+  border-color: rgba(0, 245, 212, 0.25);
+}
+
+.calendar-day-other {
+  opacity: 0.4;
+}
+
+/* ─── Calendar Event Pill ─── */
+.calendar-event-pill {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.calendar-event-pill:hover {
+  filter: brightness(1.2);
+  transform: scale(1.02);
+}
+
+/* ─── Gantt Bar ─── */
+.gantt-bar {
+  height: 28px;
+  border-radius: 6px;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.gantt-bar:hover {
+  filter: brightness(1.2);
+  transform: scaleY(1.1);
+  box-shadow: 0 0 12px currentColor;
+}
+
+.gantt-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.1), transparent);
+  border-radius: 6px 6px 0 0;
+}
+
+/* ─── Bell Ring Animation ─── */
+@keyframes bellRing {
+  0%, 100% { transform: rotate(0deg); }
+  10% { transform: rotate(14deg); }
+  20% { transform: rotate(-14deg); }
+  30% { transform: rotate(8deg); }
+  40% { transform: rotate(-8deg); }
+  50% { transform: rotate(4deg); }
+  60% { transform: rotate(0deg); }
+}
+
+.bell-ring {
+  animation: bellRing 2s ease-in-out infinite;
+  transform-origin: top center;
+}
+
+/* ─── Gradient Border Gold (animated gold-only border) ─── */
+.gradient-border-gold {
+  position: relative;
+  z-index: 0;
+}
+
+.gradient-border-gold::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, #D4AF37, #FFD700, #B8962E, #FFD700, #D4AF37);
+  background-size: 400% 400%;
+  animation: gradientBorderShift 4s ease-in-out infinite;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  z-index: -1;
+}
+
+/* ─── Main Content Background Pattern ─── */
+.main-content-bg {
+  background:
+    radial-gradient(ellipse at 15% 30%, rgba(58, 12, 163, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 85% 70%, rgba(0, 245, 212, 0.03) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(212, 175, 55, 0.02) 0%, transparent 50%);
+}
+
+/* ─── Table Row Hover ─── */
+.table-row-hover:hover {
+  background: rgba(0, 245, 212, 0.03);
+}
+
+.table-row-alt:nth-child(even) {
+  background: rgba(26, 18, 50, 0.3);
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *, ::before, ::after {

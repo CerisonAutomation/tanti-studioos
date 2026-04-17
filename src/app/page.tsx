@@ -8,6 +8,7 @@ import {
   FolderKanban,
   FileText,
   Inbox,
+  CalendarDays,
   UsersRound,
   PenTool,
   Palette,
@@ -42,6 +43,7 @@ import AiDesignModule from '@/components/studio/ai-design';
 import KnowledgeBaseModule from '@/components/studio/knowledge-base';
 import MoodBoardModule from '@/components/studio/mood-board';
 import ExpensesModule from '@/components/studio/expenses';
+import CalendarModule from '@/components/studio/calendar';
 import TeamModule from '@/components/studio/team';
 import AgentsModule from '@/components/studio/agents';
 import SettingsModule from '@/components/studio/settings';
@@ -54,6 +56,7 @@ const navItems: { id: ActiveModule; label: string; icon: React.ReactNode; badge?
   { id: 'projects', label: 'Projects', icon: <FolderKanban className="h-5 w-5" /> },
   { id: 'quotes', label: 'Quotes & Proposals', icon: <FileText className="h-5 w-5" /> },
   { id: 'inbox', label: 'AI Inbox', icon: <Inbox className="h-5 w-5" />, badge: '4' },
+  { id: 'calendar', label: 'Calendar', icon: <CalendarDays className="h-5 w-5" /> },
   { id: 'team', label: 'Team', icon: <UsersRound className="h-5 w-5" /> },
   { id: 'floorplan', label: 'Floor Plans', icon: <PenTool className="h-5 w-5" /> },
   { id: 'mood-board', label: 'Mood Boards', icon: <Palette className="h-5 w-5" /> },
@@ -104,6 +107,8 @@ export default function Home() {
         return <QuotesModule />;
       case 'inbox':
         return <InboxModule />;
+      case 'calendar':
+        return <CalendarModule />;
       case 'team':
         return <TeamModule />;
       case 'floorplan':
@@ -272,7 +277,7 @@ export default function Home() {
       </motion.aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col min-h-screen overflow-hidden relative">
+      <main className="flex-1 flex flex-col min-h-screen overflow-hidden relative main-content-bg">
         {/* Top Bar */}
         <header className="shrink-0 h-14 glass top-bar-border flex items-center justify-between px-6 border-b border-border/20 z-40 relative">
           {/* Gradient accent line under header */}
@@ -314,7 +319,7 @@ export default function Home() {
               className="relative text-muted-foreground hover:text-foreground h-8 w-8"
               onClick={() => setNotificationOpen(true)}
             >
-              <Bell className="h-4 w-4" />
+              <Bell className={`h-4 w-4 ${unreadCount > 0 ? 'bell-ring' : ''}`} />
               {unreadCount > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-brand-cyan text-[10px] font-bold flex items-center justify-center text-background pulse-cyan">
                   {unreadCount}

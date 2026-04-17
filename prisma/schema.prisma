@@ -35,11 +35,12 @@ model Client {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  projects   Project[]
-  quotes     Quote[]
-  messages   Message[]
-  documents  Document[]
-  expenses   Expense[]
+  projects      Project[]
+  quotes        Quote[]
+  messages      Message[]
+  documents     Document[]
+  expenses      Expense[]
+  calendarEvents CalendarEvent[]
 }
 
 model Project {
@@ -63,9 +64,10 @@ model Project {
   documents  Document[]
   floorplans Floorplan[]
   tasks      Task[]
-  moodBoards MoodBoard[]
-  expenses   Expense[]
-  assignments Assignment[]
+  moodBoards     MoodBoard[]
+  expenses       Expense[]
+  assignments    Assignment[]
+  calendarEvents CalendarEvent[]
 }
 
 model Task {
@@ -258,4 +260,23 @@ model Assignment {
 
   teamMember TeamMember @relation(fields: [teamMemberId], references: [id])
   project    Project    @relation(fields: [projectId], references: [id])
+}
+
+model CalendarEvent {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  type        String   @default("meeting")
+  startDate   DateTime
+  endDate     DateTime?
+  allDay      Boolean  @default(false)
+  location    String?
+  clientId    String?
+  projectId   String?
+  color       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  client  Client?  @relation(fields: [clientId], references: [id])
+  project Project? @relation(fields: [projectId], references: [id])
 }
