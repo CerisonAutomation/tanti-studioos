@@ -6,7 +6,7 @@ import ReactMarkdown from 'react-markdown';
 import {
   Send, Plus, MessageSquare, Palette, Mail, FileText,
   Sparkles, Bot, User, Trash2, Wand2, Paintbrush, ChevronRight,
-  Loader2, Lightbulb, Copy, Check,
+  Loader2, Lightbulb, Copy, Check, Image as ImageIcon, Download,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -139,8 +139,26 @@ export default function AiDesignModule() {
   const [toolResult, setToolResult] = useState('');
   const [toolGenerating, setToolGenerating] = useState(false);
 
+  // Image generation state
+  const [imagePrompt, setImagePrompt] = useState('');
+  const [imageStyle, setImageStyle] = useState('Contemporary');
+  const [imageRoom, setImageRoom] = useState('Living Room');
+  const [imageGenerating, setImageGenerating] = useState(false);
+  const [generatedImage, setGeneratedImage] = useState<{ base64: string; prompt: string; style: string; room: string } | null>(null);
+
   // Projects
   const [projects, setProjects] = useState<ProjectOption[]>([]);
+
+  // Fetch conversations helper
+  const fetchConversations = useCallback(async () => {
+    try {
+      const convRes = await fetch('/api/ai/conversations');
+      if (convRes.ok) {
+        const data = await convRes.json();
+        setConversations(data);
+      }
+    } catch (e) { console.error(e); }
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -167,7 +185,7 @@ export default function AiDesignModule() {
     };
     load();
     return () => { cancelled = true; };
-  }, [selectedProject]);
+  }, []);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -261,6 +279,50 @@ export default function AiDesignModule() {
       }
     } catch (e) { console.error(e); }
     setGenerating(false);
+  };
+
+  // Generate image
+  const generateImage = async () => {
+    if (!imagePrompt.trim() || imageGenerating) return;
+    setImageGenerating(true);
+    setGeneratedImage(null);
+
+    try {
+      const res = await fetch('/api/ai/generate-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: imagePrompt.trim(),
+          style: imageStyle,
+          room: imageRoom,
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setGeneratedImage({
+          base64: data.base64,
+          prompt: data.prompt,
+          style: imageStyle,
+          room: imageRoom,
+        });
+      } else {
+        const errData = await res.json();
+        console.error('Image generation failed:', errData.error);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    setImageGenerating(false);
+  };
+
+  // Download generated image
+  const downloadImage = () => {
+    if (!generatedImage) return;
+    const link = document.createElement('a');
+    link.href = `data:image/png;base64,${generatedImage.base64}`;
+    link.download = `design-${Date.now()}.png`;
+    link.click();
   };
 
   // AI tool action
@@ -407,6 +469,9 @@ export default function AiDesignModule() {
               </TabsTrigger>
               <TabsTrigger value="design" className="text-xs">
                 <Wand2 className="size-3.5 mr-1" /> Design Generator
+              </TabsTrigger>
+              <TabsTrigger value="image" className="text-xs">
+                <ImageIcon className="size-3.5 mr-1" /> Image Gen
               </TabsTrigger>
             </TabsList>
 
@@ -626,6 +691,137 @@ export default function AiDesignModule() {
                       </CardContent>
                     </Card>
                   </motion.div>
+                )}
+              </div>
+            </TabsContent>
+
+            {/* Image Generation Tab */}
+            <TabsContent value="image" className="flex-1 overflow-y-auto mt-0 p-6">
+              <div className="max-w-4xl mx-auto space-y-6">
+                {/* Image Generation Controls */}
+                <Card className="glass-card card-shine rounded-xl border-brand-indigo/20">
+                  <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <ImageIcon className="size-5 text-brand-cyan" /> Design Visualization Generator
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Design Prompt</Label>
+                      <Textarea
+                        value={imagePrompt}
+                        onChange={(e) => setImagePrompt(e.target.value)}
+                        placeholder="Describe the interior design you want to visualize... e.g., A luxurious Mediterranean living room with arched windows, terracotta tiles, and elegant linen furniture"
+                        className="min-h-[100px] bg-brand-surface-light border-brand-indigo/20 resize-none"
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs">Style</Label>
+                        <Select value={imageStyle} onValueChange={setImageStyle}>
+                          <SelectTrigger className="bg-brand-surface-light border-brand-indigo/20 w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {STYLES.map((s) => (
+                              <SelectItem key={s} value={s}>{s}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs">Room Type</Label>
+                        <Select value={imageRoom} onValueChange={setImageRoom}>
+                          <SelectTrigger className="bg-brand-surface-light border-brand-indigo/20 w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {ROOM_TYPES.map((r) => (
+                              <SelectItem key={r} value={r}>{r}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    {/* Style Color Preview */}
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-2 block">Style Color Reference</Label>
+                      <TooltipProvider>
+                        <div className="flex gap-2">
+                          {(STYLE_COLORS[imageStyle] || []).map((color) => (
+                            <ColorSwatch key={color} color={color} />
+                          ))}
+                        </div>
+                      </TooltipProvider>
+                    </div>
+
+                    <Button
+                      onClick={generateImage}
+                      disabled={imageGenerating || !imagePrompt.trim()}
+                      className="w-full bg-brand-cyan/20 text-brand-cyan hover:bg-brand-cyan/30 border border-brand-cyan/30"
+                    >
+                      {imageGenerating ? (
+                        <>
+                          <Loader2 className="size-4 mr-2 animate-spin" /> Generating Visualization...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="size-4 mr-2" /> Generate Design Visualization
+                        </>
+                      )}
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                {/* Generated Image */}
+                {generatedImage && (
+                  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+                    <Card className="glass-card card-shine rounded-xl border-brand-cyan/20 glow-cyan overflow-hidden">
+                      <CardHeader>
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="text-base flex items-center gap-2">
+                            <Sparkles className="size-5 text-brand-gold" /> Generated Visualization
+                          </CardTitle>
+                          <div className="flex items-center gap-2">
+                            <Badge className="status-design">{generatedImage.style} · {generatedImage.room}</Badge>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-xs text-brand-cyan hover:text-brand-cyan/80"
+                              onClick={downloadImage}
+                            >
+                              <Download className="size-3.5 mr-1" /> Download
+                            </Button>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="rounded-lg overflow-hidden border border-brand-indigo/10">
+                          <img
+                            src={`data:image/png;base64,${generatedImage.base64}`}
+                            alt="AI generated interior design visualization"
+                            className="w-full h-auto"
+                          />
+                        </div>
+                        <div className="mt-4 pt-4 border-t border-brand-indigo/10">
+                          <Label className="text-xs text-muted-foreground mb-1 block">Enhanced Prompt</Label>
+                          <p className="text-xs text-muted-foreground leading-relaxed">{generatedImage.prompt}</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                )}
+
+                {/* Placeholder when no image */}
+                {!generatedImage && !imageGenerating && (
+                  <div className="text-center py-12">
+                    <ImageIcon className="size-12 mx-auto text-brand-cyan/40 mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">Design Visualization</h3>
+                    <p className="text-muted-foreground text-sm max-w-md mx-auto">
+                      Describe your ideal interior space and let AI generate a photorealistic visualization. Combine styles, room types, and specific details for best results.
+                    </p>
+                  </div>
                 )}
               </div>
             </TabsContent>

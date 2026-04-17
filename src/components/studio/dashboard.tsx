@@ -3,6 +3,18 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from 'recharts';
+import {
   DollarSign,
   FolderKanban,
   Users,
@@ -21,6 +33,7 @@ import {
   Zap,
   X,
   Sparkles,
+  BarChart3,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -51,7 +64,27 @@ interface DashboardData {
     budget: number | null;
     spent: number;
   }>;
+  monthlyRevenue: Array<{
+    month: string;
+    revenue: number;
+  }>;
 }
+
+/* ─── Brand Colors for Charts ─── */
+const BRAND_COLORS = {
+  indigo: '#3A0CA3',
+  cyan: '#00F5D4',
+  gold: '#D4AF37',
+};
+
+const PIE_COLORS: Record<string, string> = {
+  planning: '#3A0CA3',
+  design: '#5A2DC8',
+  procurement: '#00F5D4',
+  execution: '#D4AF37',
+  completion: '#22C55E',
+  delivered: '#00B4D8',
+};
 
 interface TaskData {
   id: string;
@@ -511,6 +544,151 @@ export default function DashboardModule() {
           </Card>
         </motion.div>
       </div>
+
+      {/* Revenue Overview Section */}
+      <motion.div variants={itemVariants}>
+        <div className="flex items-center gap-3 mb-4">
+          <h3 className="text-lg font-bold font-['Space_Grotesk']">Revenue Overview</h3>
+          <BarChart3 className="h-4 w-4 text-brand-cyan" />
+          <div className="gradient-line flex-1" />
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Monthly Revenue Area Chart */}
+          <Card className="glass-card card-shine border-border/20 rounded-xl lg:col-span-2">
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base font-['Space_Grotesk']">Monthly Revenue Trend</CardTitle>
+                <div className="flex items-center gap-1.5">
+                  <TrendingUp className="h-3.5 w-3.5 text-brand-cyan" />
+                  <span className="text-xs text-brand-cyan">Last 6 months</span>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="h-64 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={data.monthlyRevenue || []} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#00F5D4" stopOpacity={0.4} />
+                        <stop offset="50%" stopColor="#3A0CA3" stopOpacity={0.15} />
+                        <stop offset="95%" stopColor="#3A0CA3" stopOpacity={0} />
+                      </linearGradient>
+                      <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stopColor="#3A0CA3" />
+                        <stop offset="50%" stopColor="#00F5D4" />
+                        <stop offset="100%" stopColor="#D4AF37" />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                    <XAxis
+                      dataKey="month"
+                      stroke="rgba(255,255,255,0.4)"
+                      tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 12 }}
+                      axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      stroke="rgba(255,255,255,0.4)"
+                      tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 12 }}
+                      axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+                      tickLine={false}
+                      tickFormatter={(v: number) => `€${(v / 1000).toFixed(0)}k`}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'rgba(15, 10, 40, 0.95)',
+                        border: '1px solid rgba(0, 245, 212, 0.2)',
+                        borderRadius: '12px',
+                        backdropFilter: 'blur(12px)',
+                        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+                        padding: '12px 16px',
+                      }}
+                      labelStyle={{ color: 'rgba(255,255,255,0.7)', fontSize: 12, marginBottom: 4 }}
+                      itemStyle={{ color: '#00F5D4', fontSize: 14, fontWeight: 600 }}
+                      formatter={(value: number) => [formatCurrency(value), 'Revenue']}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="revenue"
+                      stroke="url(#lineGradient)"
+                      strokeWidth={3}
+                      fill="url(#revenueGradient)"
+                      dot={{ r: 4, fill: '#00F5D4', stroke: '#0F0A28', strokeWidth: 2 }}
+                      activeDot={{ r: 6, fill: '#D4AF37', stroke: '#0F0A28', strokeWidth: 2 }}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Project Status Pie Chart */}
+          <Card className="glass-card card-shine border-border/20 rounded-xl">
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base font-['Space_Grotesk']">Project Status</CardTitle>
+                <FolderKanban className="h-4 w-4 text-brand-indigo-light" />
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="h-48 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={Object.entries(data.projectsByStatus || {}).map(([name, value]) => ({
+                        name: name.charAt(0).toUpperCase() + name.slice(1),
+                        value,
+                      }))}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={45}
+                      outerRadius={72}
+                      paddingAngle={3}
+                      dataKey="value"
+                      stroke="rgba(15, 10, 40, 0.8)"
+                      strokeWidth={2}
+                    >
+                      {Object.entries(data.projectsByStatus || {}).map(([status], index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={PIE_COLORS[status] || '#6B7280'}
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'rgba(15, 10, 40, 0.95)',
+                        border: '1px solid rgba(0, 245, 212, 0.2)',
+                        borderRadius: '12px',
+                        backdropFilter: 'blur(12px)',
+                        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+                        padding: '12px 16px',
+                      }}
+                      labelStyle={{ color: 'rgba(255,255,255,0.7)', fontSize: 12 }}
+                      itemStyle={{ color: '#00F5D4', fontSize: 13, fontWeight: 600 }}
+                      formatter={(value: number, name: string) => [`${value} project${value !== 1 ? 's' : ''}`, name]}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              {/* Pie Legend */}
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 mt-3">
+                {Object.entries(data.projectsByStatus || {}).map(([status, count]) => (
+                  <div key={status} className="flex items-center gap-2">
+                    <span
+                      className="h-2.5 w-2.5 rounded-full shrink-0"
+                      style={{ backgroundColor: PIE_COLORS[status] || '#6B7280' }}
+                    />
+                    <span className="text-xs text-muted-foreground truncate capitalize">{status}</span>
+                    <span className="text-xs font-semibold ml-auto">{count}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </motion.div>
 
       {/* Bottom Row: Upcoming Tasks + Quick Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

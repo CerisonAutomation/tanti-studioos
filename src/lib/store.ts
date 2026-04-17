@@ -8,6 +8,7 @@ export type ActiveModule =
   | "inbox"
   | "floorplan"
   | "procurement"
+  | "knowledge-base"
   | "ai-design"
   | "settings"
   | "agents";

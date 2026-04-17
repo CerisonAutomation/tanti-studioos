@@ -48,7 +48,9 @@ import {
   User,
   Sparkles,
   ChevronDown,
+  Download,
 } from 'lucide-react';
+import { exportToCSV } from '@/lib/export';
 
 // Types
 interface ClientProject {
@@ -821,13 +823,39 @@ export default function ClientsModule() {
             {clients.length} client{clients.length !== 1 ? 's' : ''} total
           </p>
         </div>
-        <Button
-          onClick={openAddDialog}
-          className="bg-brand-indigo hover:bg-brand-indigo-light text-white glow-indigo"
-        >
-          <Plus className="h-4 w-4 mr-1.5" />
-          Add Client
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => {
+              const exportData = clients.map(c => ({
+                name: c.name,
+                email: c.email,
+                phone: c.phone ?? '',
+                city: c.city ?? '',
+                country: c.country,
+                status: c.status,
+                source: c.source ?? '',
+                budgetMin: c.budgetMin ?? '',
+                budgetMax: c.budgetMax ?? '',
+                createdAt: c.createdAt,
+              }));
+              exportToCSV(exportData, 'clients');
+            }}
+            disabled={clients.length === 0}
+            className="border-brand-indigo/30 hover:bg-brand-indigo/20"
+            title="Export to CSV"
+          >
+            <Download className="h-4 w-4" />
+          </Button>
+          <Button
+            onClick={openAddDialog}
+            className="bg-brand-indigo hover:bg-brand-indigo-light text-white glow-indigo"
+          >
+            <Plus className="h-4 w-4 mr-1.5" />
+            Add Client
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}

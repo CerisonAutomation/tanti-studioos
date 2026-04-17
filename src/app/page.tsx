@@ -10,6 +10,7 @@ import {
   Inbox,
   PenTool,
   ShoppingCart,
+  BookOpen,
   Sparkles,
   Settings,
   Menu,
@@ -35,6 +36,7 @@ import InboxModule from '@/components/studio/inbox';
 import FloorplanModule from '@/components/studio/floorplan';
 import ProcurementModule from '@/components/studio/procurement';
 import AiDesignModule from '@/components/studio/ai-design';
+import KnowledgeBaseModule from '@/components/studio/knowledge-base';
 import AgentsModule from '@/components/studio/agents';
 import SettingsModule from '@/components/studio/settings';
 import CommandPalette from '@/components/studio/command-palette';
@@ -48,6 +50,7 @@ const navItems: { id: ActiveModule; label: string; icon: React.ReactNode; badge?
   { id: 'inbox', label: 'AI Inbox', icon: <Inbox className="h-5 w-5" />, badge: '4' },
   { id: 'floorplan', label: 'Floor Plans', icon: <PenTool className="h-5 w-5" /> },
   { id: 'procurement', label: 'Procurement', icon: <ShoppingCart className="h-5 w-5" /> },
+  { id: 'knowledge-base', label: 'Knowledge Base', icon: <BookOpen className="h-5 w-5" /> },
   { id: 'ai-design', label: 'AI Design', icon: <Sparkles className="h-5 w-5" /> },
   { id: 'agents', label: 'Agents', icon: <Bot className="h-5 w-5" /> },
   { id: 'settings', label: 'Settings', icon: <Settings className="h-5 w-5" /> },
@@ -96,6 +99,8 @@ export default function Home() {
         return <FloorplanModule />;
       case 'procurement':
         return <ProcurementModule />;
+      case 'knowledge-base':
+        return <KnowledgeBaseModule />;
       case 'ai-design':
         return <AiDesignModule />;
       case 'agents':

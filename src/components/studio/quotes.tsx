@@ -49,6 +49,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { exportToCSV } from '@/lib/export';
 
 // Types
 interface LineItem {
@@ -568,15 +569,40 @@ export default function QuotesModule() {
             Manage Good/Better/Best tier proposals
           </p>
         </div>
-        <Button
-          onClick={() => {
-            resetForm();
-            setShowNewDialog(true);
-          }}
-          className="bg-brand-indigo hover:bg-brand-indigo-light text-white"
-        >
-          <Plus className="h-4 w-4 mr-2" /> New Quote
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => {
+              const exportData = quotes.map(q => ({
+                title: q.title,
+                client: q.client.name,
+                project: q.project?.name ?? '',
+                tier: q.tier,
+                status: q.status,
+                subtotal: q.subtotal,
+                tax: q.tax,
+                total: q.total,
+                createdAt: q.createdAt,
+              }));
+              exportToCSV(exportData, 'quotes');
+            }}
+            disabled={quotes.length === 0}
+            className="border-brand-indigo/30 hover:bg-brand-indigo/20"
+            title="Export to CSV"
+          >
+            <Download className="h-4 w-4" />
+          </Button>
+          <Button
+            onClick={() => {
+              resetForm();
+              setShowNewDialog(true);
+            }}
+            className="bg-brand-indigo hover:bg-brand-indigo-light text-white"
+          >
+            <Plus className="h-4 w-4 mr-2" /> New Quote
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
