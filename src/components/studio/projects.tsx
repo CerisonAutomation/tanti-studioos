@@ -309,7 +309,8 @@ export default function ProjectsModule() {
       const res = await fetch('/api/clients');
       if (res.ok) {
         const data = await res.json();
-        setClients(data.map((c: { id: string; name: string }) => ({ id: c.id, name: c.name })));
+        const clientList = Array.isArray(data) ? data : (data.clients || []);
+        setClients(clientList.map((c: { id: string; name: string }) => ({ id: c.id, name: c.name })));
       }
     } catch (err) {
       console.error('Failed to fetch clients:', err);

@@ -209,9 +209,9 @@ export default function QuotesModule() {
       const clientsData = await clientsRes.json();
       const projectsData = await projectsRes.json();
 
-      setQuotes(Array.isArray(quotesData) ? quotesData : []);
-      setClients(Array.isArray(clientsData) ? clientsData : []);
-      setProjects(Array.isArray(projectsData) ? projectsData : []);
+      setQuotes(Array.isArray(quotesData) ? quotesData : (quotesData.quotes || []));
+      setClients(Array.isArray(clientsData) ? clientsData : (clientsData.clients || []));
+      setProjects(Array.isArray(projectsData) ? projectsData : (projectsData.projects || []));
     } catch (err) {
       console.error('Error fetching data:', err);
       toast.error('Failed to load quotes');

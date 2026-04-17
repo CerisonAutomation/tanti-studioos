@@ -111,7 +111,7 @@ export default function CalendarModule() {
     try {
       const res = await fetch('/api/projects');
       const data = await res.json();
-      return data.projects || [];
+      return Array.isArray(data) ? data : (data.projects || []);
     } catch {
       return [];
     }
