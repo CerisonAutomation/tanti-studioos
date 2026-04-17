@@ -6,6 +6,7 @@ export type ActiveModule =
   | "projects"
   | "quotes"
   | "inbox"
+  | "team"
   | "floorplan"
   | "mood-board"
   | "procurement"

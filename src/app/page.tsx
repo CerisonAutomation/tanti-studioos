@@ -8,6 +8,7 @@ import {
   FolderKanban,
   FileText,
   Inbox,
+  UsersRound,
   PenTool,
   Palette,
   ShoppingCart,
@@ -41,6 +42,7 @@ import AiDesignModule from '@/components/studio/ai-design';
 import KnowledgeBaseModule from '@/components/studio/knowledge-base';
 import MoodBoardModule from '@/components/studio/mood-board';
 import ExpensesModule from '@/components/studio/expenses';
+import TeamModule from '@/components/studio/team';
 import AgentsModule from '@/components/studio/agents';
 import SettingsModule from '@/components/studio/settings';
 import CommandPalette from '@/components/studio/command-palette';
@@ -52,6 +54,7 @@ const navItems: { id: ActiveModule; label: string; icon: React.ReactNode; badge?
   { id: 'projects', label: 'Projects', icon: <FolderKanban className="h-5 w-5" /> },
   { id: 'quotes', label: 'Quotes & Proposals', icon: <FileText className="h-5 w-5" /> },
   { id: 'inbox', label: 'AI Inbox', icon: <Inbox className="h-5 w-5" />, badge: '4' },
+  { id: 'team', label: 'Team', icon: <UsersRound className="h-5 w-5" /> },
   { id: 'floorplan', label: 'Floor Plans', icon: <PenTool className="h-5 w-5" /> },
   { id: 'mood-board', label: 'Mood Boards', icon: <Palette className="h-5 w-5" /> },
   { id: 'procurement', label: 'Procurement', icon: <ShoppingCart className="h-5 w-5" /> },
@@ -101,6 +104,8 @@ export default function Home() {
         return <QuotesModule />;
       case 'inbox':
         return <InboxModule />;
+      case 'team':
+        return <TeamModule />;
       case 'floorplan':
         return <FloorplanModule />;
       case 'mood-board':
@@ -246,6 +251,14 @@ export default function Home() {
               </div>
             </div>
           )}
+          {/* Keyboard Shortcut Hints */}
+          {sidebarOpen && (
+            <div className="flex items-center justify-center gap-3 px-2 py-1 text-[10px] text-muted-foreground/60">
+              <span>⌘K Search</span>
+              <span className="text-border/40">•</span>
+              <span>⌘N New</span>
+            </div>
+          )}
           <Button
             variant="ghost"
             size="sm"
@@ -259,7 +272,7 @@ export default function Home() {
       </motion.aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col min-h-screen overflow-hidden">
+      <main className="flex-1 flex flex-col min-h-screen overflow-hidden relative">
         {/* Top Bar */}
         <header className="shrink-0 h-14 glass top-bar-border flex items-center justify-between px-6 border-b border-border/20 z-40 relative">
           {/* Gradient accent line under header */}
@@ -332,6 +345,19 @@ export default function Home() {
             {renderModule()}
           </motion.div>
         </AnimatePresence>
+
+        {/* Gradient line above footer */}
+        <div className="gradient-line w-full shrink-0" />
+
+        {/* Sticky Footer */}
+        <footer className="shrink-0 glass h-8 border-t border-border/10 flex items-center justify-between px-6 text-[11px] text-muted-foreground mt-auto">
+          <span>© 2026 Tanti Interiors StudioOS</span>
+          <div className="flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-green-400 pulse-cyan" />
+            <span className="text-green-400">System Online</span>
+          </div>
+          <span>v2.4.0 • Malta</span>
+        </footer>
       </main>
 
       {/* Command Palette Overlay */}

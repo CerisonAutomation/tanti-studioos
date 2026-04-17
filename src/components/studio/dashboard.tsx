@@ -5,6 +5,8 @@ import { motion } from 'framer-motion';
 import {
   AreaChart,
   Area,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -42,6 +44,10 @@ import {
   UsersRound,
   Ticket,
   ShoppingCart,
+  ExternalLink,
+  ThumbsUp,
+  Target,
+  Timer,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -80,13 +86,23 @@ interface DashboardData {
 }
 
 /* ─── Static Announcements Data ─── */
-const ANNOUNCEMENTS = [
+interface Announcement {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  category: AnnouncementCategory;
+  isNew?: boolean;
+}
+
+const INITIAL_ANNOUNCEMENTS: Announcement[] = [
   {
     id: '1',
     title: 'New fabric catalog from Italy available',
-    description: 'Brenta Fabbrics 2026 collection now in our sample library. Request swatches through Procurement.',
+    description: 'Brenta Fabrics 2026 collection now in our sample library. Request swatches through Procurement.',
     date: '2026-03-04',
     category: 'Design' as const,
+    isNew: true,
   },
   {
     id: '2',
@@ -94,6 +110,7 @@ const ANNOUNCEMENTS = [
     description: 'All-hands design review at 10:00 AM. Bring updated mood boards for Valletta penthouse project.',
     date: '2026-03-06',
     category: 'Team' as const,
+    isNew: true,
   },
   {
     id: '3',
@@ -114,22 +131,26 @@ const ANNOUNCEMENTS = [
 type AnnouncementCategory = 'Design' | 'Team' | 'Events' | 'Procurement';
 
 function getCategoryStyle(category: AnnouncementCategory) {
-  const styles: Record<AnnouncementCategory, { badge: string; icon: React.ReactNode }> = {
+  const styles: Record<AnnouncementCategory, { badge: string; icon: React.ReactNode; border: string }> = {
     Design: {
       badge: 'bg-brand-cyan/15 text-brand-cyan border-brand-cyan/20',
       icon: <Palette className="h-3 w-3" />,
+      border: 'border-l-brand-cyan',
     },
     Team: {
       badge: 'bg-brand-indigo/15 text-brand-indigo-light border-brand-indigo/20',
       icon: <UsersRound className="h-3 w-3" />,
+      border: 'border-l-brand-indigo',
     },
     Events: {
       badge: 'bg-brand-gold/15 text-brand-gold border-brand-gold/20',
       icon: <Ticket className="h-3 w-3" />,
+      border: 'border-l-brand-gold',
     },
     Procurement: {
       badge: 'bg-green-500/15 text-green-400 border-green-500/20',
       icon: <ShoppingCart className="h-3 w-3" />,
+      border: 'border-l-green-500',
     },
   };
   return styles[category];
@@ -317,7 +338,28 @@ function AnimatedNumber({ value, format = 'number' }: { value: number; format?: 
   return <span className="animate-count">{display}</span>;
 }
 
-/* ─── Onboarding Banner ─── */
+/* ─── Micro Sparkline (CSS bars for KPI cards) ─── */
+function MicroSparkline({ data, color = '#00F5D4' }: { data: number[]; color?: string }) {
+  const max = Math.max(...data, 1);
+  return (
+    <div className="flex items-end gap-[2px] h-5">
+      {data.map((v, i) => (
+        <div
+          key={i}
+          className="rounded-sm min-w-[3px]"
+          style={{
+            height: `${Math.max((v / max) * 100, 15)}%`,
+            width: 4,
+            backgroundColor: color,
+            opacity: 0.4 + (i / data.length) * 0.6,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+/* ─── Onboarding Banner (minimized) ─── */
 function OnboardingBanner() {
   const { setActiveModule } = useAppStore();
   const [dismissed, setDismissed] = useState(() => {
@@ -335,73 +377,61 @@ function OnboardingBanner() {
   if (dismissed) return null;
 
   const steps = [
-    { num: 1, label: 'Add Clients', icon: <Users className="h-5 w-5" />, module: 'clients' as ActiveModule, color: 'from-brand-gold to-amber-400', done: true },
-    { num: 2, label: 'Create Projects', icon: <FolderKanban className="h-5 w-5" />, module: 'projects' as ActiveModule, color: 'from-brand-indigo to-brand-indigo-light', done: true },
-    { num: 3, label: 'Send Quotes', icon: <FileText className="h-5 w-5" />, module: 'quotes' as ActiveModule, color: 'from-brand-cyan to-brand-cyan-dark', done: false },
-    { num: 4, label: 'Enable AI', icon: <Sparkles className="h-5 w-5" />, module: 'ai-design' as ActiveModule, color: 'from-purple-500 to-pink-500', done: false },
+    { num: 1, label: 'Add Clients', icon: <Users className="h-4 w-4" />, module: 'clients' as ActiveModule, color: 'from-brand-gold to-amber-400', done: true },
+    { num: 2, label: 'Create Projects', icon: <FolderKanban className="h-4 w-4" />, module: 'projects' as ActiveModule, color: 'from-brand-indigo to-brand-indigo-light', done: true },
+    { num: 3, label: 'Send Quotes', icon: <FileText className="h-4 w-4" />, module: 'quotes' as ActiveModule, color: 'from-brand-cyan to-brand-cyan-dark', done: false },
+    { num: 4, label: 'Enable AI', icon: <Sparkles className="h-4 w-4" />, module: 'ai-design' as ActiveModule, color: 'from-purple-500 to-pink-500', done: false },
   ];
 
   return (
     <motion.div
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="glass-card rounded-2xl p-6 border border-border/20 relative overflow-hidden"
+      className="glass-card rounded-xl p-4 border border-border/20 relative overflow-hidden"
     >
-      {/* Background gradient accent - more visually striking */}
-      <div className="absolute inset-0 bg-gradient-to-br from-brand-indigo/20 via-brand-indigo/5 to-brand-cyan/15 pointer-events-none" />
-      <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-brand-gold/5 to-transparent pointer-events-none" />
-
-      <div className="relative">
-        <div className="flex items-start justify-between mb-5">
-          <div>
-            <h3 className="text-xl font-bold font-['Space_Grotesk']">
-              Welcome to{' '}
-              <span className="gradient-text">Tanti Interiors StudioOS</span>
-            </h3>
-            <p className="text-sm text-muted-foreground mt-1">Get started with these quick setup steps</p>
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleDismiss}
-            className="text-muted-foreground hover:text-foreground h-7 w-7 -mt-1 -mr-1"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="absolute inset-0 bg-gradient-to-r from-brand-indigo/10 via-transparent to-brand-cyan/10 pointer-events-none" />
+      <div className="relative flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
           {steps.map((step, idx) => (
             <button
               key={step.num}
               onClick={() => setActiveModule(step.module)}
-              className="relative flex flex-col items-center gap-3 p-4 rounded-xl bg-brand-surface-light/30 border border-border/20 hover:border-brand-cyan/30 transition-all group text-center"
+              className="flex items-center gap-2 group"
             >
-              {/* Step number */}
-              <div className="absolute -top-2 -left-2 h-6 w-6 rounded-full bg-brand-surface-lighter border border-border/30 flex items-center justify-center text-[10px] font-bold text-muted-foreground">
-                {step.num}
+              <div className={`h-7 w-7 rounded-lg bg-gradient-to-br ${step.color} flex items-center justify-center text-white shadow-md group-hover:scale-110 transition-transform ${step.done ? 'opacity-70' : ''}`}>
+                {step.done ? <CheckCircle2 className="h-3.5 w-3.5" /> : step.icon}
               </div>
-              {/* Icon */}
-              <div className={`h-12 w-12 rounded-xl bg-gradient-to-br ${step.color} flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform`}>
-                {step.icon}
-              </div>
-              {/* Label */}
-              <span className="text-xs font-medium group-hover:text-brand-cyan transition-colors">{step.label}</span>
-              {/* Done indicator */}
-              {step.done && (
-                <div className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-green-500 flex items-center justify-center">
-                  <CheckCircle2 className="h-3 w-3 text-white" />
-                </div>
-              )}
-              {/* Connector line */}
+              <span className="text-[11px] font-medium group-hover:text-brand-cyan transition-colors hidden sm:inline">{step.label}</span>
               {idx < steps.length - 1 && (
-                <div className="hidden sm:block absolute top-1/2 -right-2 w-4 border-t border-dashed border-border/40" />
+                <div className="w-4 border-t border-dashed border-border/40 hidden sm:block" />
               )}
             </button>
           ))}
         </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleDismiss}
+          className="text-muted-foreground hover:text-foreground h-6 w-6 shrink-0"
+        >
+          <X className="h-3.5 w-3.5" />
+        </Button>
       </div>
     </motion.div>
+  );
+}
+
+/* ─── Live Clock ─── */
+function LiveClock() {
+  const [time, setTime] = useState(new Date());
+  useEffect(() => {
+    const timer = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+  return (
+    <span className="font-mono text-xs text-muted-foreground">
+      {time.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+    </span>
   );
 }
 
@@ -410,6 +440,8 @@ export default function DashboardModule() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [tasks, setTasks] = useState<TaskData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [chartType, setChartType] = useState<'area' | 'bar'>('area');
+  const [announcements, setAnnouncements] = useState<Announcement[]>(INITIAL_ANNOUNCEMENTS);
 
   const fetchDashboard = useCallback(async () => {
     try {
@@ -442,6 +474,10 @@ export default function DashboardModule() {
     }
   }, []);
 
+  const dismissAnnouncement = (id: string) => {
+    setAnnouncements(prev => prev.filter(a => a.id !== id));
+  };
+
   if (loading || !data) {
     return (
       <div className="p-6 space-y-6">
@@ -464,6 +500,13 @@ export default function DashboardModule() {
   const projectStatuses = ['planning', 'design', 'procurement', 'execution', 'completion', 'delivered'];
   const totalPipelineProjects = projectStatuses.reduce((sum, s) => sum + (data.projectsByStatus[s] || 0), 0);
 
+  const today = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+  /* Mock sparkline data for KPI cards */
+  const revenueSparkline = [28, 35, 32, 42, 38, 48, 54];
+  const projectsSparkline = [5, 6, 5, 7, 8, 7, 8];
+  const clientsSparkline = [9, 10, 11, 11, 12, 13, 13];
+
   return (
     <motion.div
       variants={containerVariants}
@@ -471,25 +514,65 @@ export default function DashboardModule() {
       animate="visible"
       className="p-6 space-y-6 dashboard-bg"
     >
-      {/* Header */}
-      <motion.div variants={itemVariants} className="flex items-center justify-between">
-        <div className="dot-pattern -m-6 mb-0 p-6 pb-0">
-          <h2 className="text-2xl font-bold font-['Space_Grotesk']">Welcome to StudioOS</h2>
-          <div className="gradient-line w-48" />
-          <p className="text-muted-foreground mt-2 text-sm">Tanti Interiors — Luxury Design Management Platform</p>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            size="sm"
-            onClick={() => setActiveModule('ai-design')}
-            className="bg-gradient-to-r from-brand-indigo to-brand-indigo-light hover:from-brand-indigo-light hover:to-brand-indigo text-white"
-          >
-            <Zap className="h-3.5 w-3.5 mr-1.5" /> AI Assistant
-          </Button>
+      {/* ─── Hero Welcome Section ─── */}
+      <motion.div variants={itemVariants}>
+        <div className="dot-pattern relative rounded-2xl overflow-hidden p-8 -m-6 mb-0">
+          {/* Radial gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-br from-brand-indigo/20 via-transparent to-brand-cyan/10 pointer-events-none" />
+          <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-brand-gold/5 to-transparent pointer-events-none" />
+
+          <div className="relative flex items-center justify-between">
+            <div>
+              <h2 className="text-3xl font-bold font-['Space_Grotesk'] shimmer-text">
+                Welcome back to StudioOS
+              </h2>
+              <div className="gradient-line w-64 mt-2" />
+              <p className="text-muted-foreground mt-3 text-sm">
+                <span className="text-brand-cyan font-semibold">Tanti Admin</span> • {today}
+              </p>
+              {/* Quick stats row */}
+              <div className="flex items-center gap-4 mt-4">
+                <div className="flex items-center gap-1.5 text-sm">
+                  <Users className="h-3.5 w-3.5 text-brand-cyan" />
+                  <span className="font-semibold">{data.totalClients}</span>
+                  <span className="text-muted-foreground text-xs">Clients</span>
+                </div>
+                <span className="text-border/40">•</span>
+                <div className="flex items-center gap-1.5 text-sm">
+                  <FolderKanban className="h-3.5 w-3.5 text-brand-indigo-light" />
+                  <span className="font-semibold">{data.totalProjects}</span>
+                  <span className="text-muted-foreground text-xs">Projects</span>
+                </div>
+                <span className="text-border/40">•</span>
+                <div className="flex items-center gap-1.5 text-sm">
+                  <DollarSign className="h-3.5 w-3.5 text-brand-gold" />
+                  <span className="font-semibold sparkle-text">{formatCurrency(data.acceptedQuotesValue || data.totalRevenue || 0)}</span>
+                  <span className="text-muted-foreground text-xs">Revenue</span>
+                </div>
+              </div>
+            </div>
+            <div className="hidden md:flex gap-2">
+              <Button
+                size="sm"
+                onClick={() => setActiveModule('ai-design')}
+                className="bg-gradient-to-r from-brand-indigo to-brand-indigo-light hover:from-brand-indigo-light hover:to-brand-indigo text-white"
+              >
+                <Zap className="h-3.5 w-3.5 mr-1.5" /> AI Assistant
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setActiveModule('projects')}
+                className="border-brand-cyan/30 text-brand-cyan hover:bg-brand-cyan/10"
+              >
+                <Plus className="h-3.5 w-3.5 mr-1.5" /> New Project
+              </Button>
+            </div>
+          </div>
         </div>
       </motion.div>
 
-      {/* Onboarding Banner */}
+      {/* Onboarding Banner (minimized) */}
       <motion.div variants={itemVariants}>
         <OnboardingBanner />
       </motion.div>
@@ -531,76 +614,94 @@ export default function DashboardModule() {
         </Card>
       </motion.div>
 
-      {/* KPI Cards */}
+      {/* ─── KPI Cards (Enhanced) ─── */}
       <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="glass-card glow-border card-shine glass-hover border-border/20 rounded-xl cursor-pointer" onClick={() => setActiveModule('projects')}>
+        {/* Revenue Card */}
+        <Card className="glass-card gradient-border-animated card-shine glass-hover border-border/20 rounded-xl cursor-pointer group" onClick={() => setActiveModule('projects')}>
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">Total Revenue</p>
-              <div className="h-8 w-8 rounded-lg bg-brand-cyan/10 flex items-center justify-center">
-                <DollarSign className="h-4 w-4 text-brand-cyan" />
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-brand-cyan/20 to-brand-cyan/5 flex items-center justify-center">
+                <DollarSign className="h-5 w-5 text-brand-cyan" />
               </div>
             </div>
             <p className="text-2xl font-bold font-['Space_Grotesk'] mt-2 sparkle-text">
               <AnimatedNumber value={data.acceptedQuotesValue || data.totalRevenue || 0} format="currency" />
             </p>
-            <div className="flex items-center gap-1 mt-1">
-              <TrendingUp className="h-3 w-3 text-green-400" />
-              <span className="text-xs text-green-400">+12.5% this month</span>
+            <div className="flex items-center justify-between mt-2">
+              <div className="flex items-center gap-1.5">
+                <TrendingUp className="h-3.5 w-3.5 text-green-400" />
+                <span className="text-xs text-green-400 font-medium">+12.5%</span>
+                <span className="text-xs text-muted-foreground">this month</span>
+              </div>
+              <MicroSparkline data={revenueSparkline} color="#00F5D4" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="glass-card glow-border card-shine glass-hover border-border/20 rounded-xl cursor-pointer" onClick={() => setActiveModule('projects')}>
+        {/* Active Projects Card */}
+        <Card className="glass-card gradient-border-animated card-shine glass-hover border-border/20 rounded-xl cursor-pointer group" onClick={() => setActiveModule('projects')}>
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">Active Projects</p>
-              <div className="h-8 w-8 rounded-lg bg-brand-indigo/10 flex items-center justify-center">
-                <FolderKanban className="h-4 w-4 text-brand-indigo-light" />
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-brand-indigo/20 to-brand-indigo/5 flex items-center justify-center">
+                <FolderKanban className="h-5 w-5 text-brand-indigo-light" />
               </div>
             </div>
             <p className="text-2xl font-bold font-['Space_Grotesk'] mt-2">
               <AnimatedNumber value={data.totalProjects} />
             </p>
-            <div className="flex items-center gap-1 mt-1">
-              <span className="text-xs text-muted-foreground">{data.projectsByStatus['execution'] || 0} in execution</span>
+            <div className="flex items-center justify-between mt-2">
+              <div className="flex items-center gap-1.5">
+                <TrendingUp className="h-3.5 w-3.5 text-green-400" />
+                <span className="text-xs text-green-400 font-medium">+2</span>
+                <span className="text-xs text-muted-foreground">new this month</span>
+              </div>
+              <MicroSparkline data={projectsSparkline} color="#5E17C4" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="glass-card glow-border card-shine glass-hover border-border/20 rounded-xl cursor-pointer" onClick={() => setActiveModule('clients')}>
+        {/* Active Clients Card */}
+        <Card className="glass-card gradient-border-animated card-shine glass-hover border-border/20 rounded-xl cursor-pointer group" onClick={() => setActiveModule('clients')}>
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">Active Clients</p>
-              <div className="h-8 w-8 rounded-lg bg-brand-gold/10 flex items-center justify-center">
-                <Users className="h-4 w-4 text-brand-gold" />
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-brand-gold/20 to-brand-gold/5 flex items-center justify-center">
+                <Users className="h-5 w-5 text-brand-gold" />
               </div>
             </div>
             <p className="text-2xl font-bold font-['Space_Grotesk'] mt-2">
               <AnimatedNumber value={data.activeClients} />
               <span className="text-sm text-muted-foreground font-normal"> / {data.totalClients}</span>
             </p>
-            <div className="flex items-center gap-1 mt-1">
-              <TrendingUp className="h-3 w-3 text-green-400" />
-              <span className="text-xs text-green-400">+2 this month</span>
+            <div className="flex items-center justify-between mt-2">
+              <div className="flex items-center gap-1.5">
+                <TrendingUp className="h-3.5 w-3.5 text-green-400" />
+                <span className="text-xs text-green-400 font-medium">+2</span>
+                <span className="text-xs text-muted-foreground">this month</span>
+              </div>
+              <MicroSparkline data={clientsSparkline} color="#D4AF37" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="glass-card glow-border card-shine glass-hover border-border/20 rounded-xl cursor-pointer" onClick={() => setActiveModule('inbox')}>
+        {/* Unread Messages Card */}
+        <Card className="glass-card gradient-border-animated card-shine glass-hover border-border/20 rounded-xl cursor-pointer group" onClick={() => setActiveModule('inbox')}>
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">Unread Messages</p>
-              <div className="h-8 w-8 rounded-lg bg-brand-cyan/10 flex items-center justify-center">
-                <Inbox className="h-4 w-4 text-brand-cyan" />
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-brand-cyan/20 to-brand-indigo/5 flex items-center justify-center">
+                <Inbox className="h-5 w-5 text-brand-cyan" />
               </div>
             </div>
             <p className="text-2xl font-bold font-['Space_Grotesk'] mt-2">
               <AnimatedNumber value={data.unreadMessages} />
             </p>
-            <div className="flex items-center gap-1 mt-1">
-              <span className="h-2 w-2 rounded-full bg-brand-cyan pulse-cyan" />
-              <span className="text-xs text-brand-cyan">Needs attention</span>
+            <div className="flex items-center gap-1.5 mt-2">
+              <TrendingDown className="h-3.5 w-3.5 text-red-400" />
+              <span className="text-xs text-red-400 font-medium">-3</span>
+              <span className="text-xs text-muted-foreground">vs last week</span>
             </div>
           </CardContent>
         </Card>
@@ -724,79 +825,146 @@ export default function DashboardModule() {
         </motion.div>
       </div>
 
-      {/* Revenue Overview Section */}
+      {/* ─── Revenue Overview Section (Enhanced) ─── */}
       <motion.div variants={itemVariants}>
         <div className="flex items-center gap-3 mb-4">
           <h3 className="text-lg font-bold font-['Space_Grotesk']">Revenue Overview</h3>
           <BarChart3 className="h-4 w-4 text-brand-cyan" />
+          {/* Last 6 Months badge */}
+          <Badge variant="outline" className="text-[10px] border-brand-cyan/20 text-brand-cyan bg-brand-cyan/5">
+            Last 6 Months
+          </Badge>
           <div className="gradient-line flex-1" />
+          {/* Chart Type Toggle */}
+          <div className="flex items-center gap-1 bg-brand-surface-light/50 rounded-lg p-0.5 border border-border/20">
+            <button
+              onClick={() => setChartType('area')}
+              className={`px-2 py-1 rounded-md text-[10px] font-medium transition-all ${
+                chartType === 'area'
+                  ? 'bg-brand-cyan/20 text-brand-cyan'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Area
+            </button>
+            <button
+              onClick={() => setChartType('bar')}
+              className={`px-2 py-1 rounded-md text-[10px] font-medium transition-all ${
+                chartType === 'bar'
+                  ? 'bg-brand-indigo/20 text-brand-indigo-light'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Bar
+            </button>
+          </div>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Monthly Revenue Area Chart */}
+          {/* Monthly Revenue Chart */}
           <Card className="glass-card card-shine border-border/20 rounded-xl lg:col-span-2">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base font-['Space_Grotesk']">Monthly Revenue Trend</CardTitle>
                 <div className="flex items-center gap-1.5">
                   <TrendingUp className="h-3.5 w-3.5 text-brand-cyan" />
-                  <span className="text-xs text-brand-cyan">Last 6 months</span>
+                  <span className="text-xs text-brand-cyan">Trending up</span>
                 </div>
               </div>
             </CardHeader>
             <CardContent className="pt-0">
               <div className="h-64 w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={data.monthlyRevenue || []} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#00F5D4" stopOpacity={0.4} />
-                        <stop offset="50%" stopColor="#3A0CA3" stopOpacity={0.15} />
-                        <stop offset="95%" stopColor="#3A0CA3" stopOpacity={0} />
-                      </linearGradient>
-                      <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="0%" stopColor="#3A0CA3" />
-                        <stop offset="50%" stopColor="#00F5D4" />
-                        <stop offset="100%" stopColor="#D4AF37" />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-                    <XAxis
-                      dataKey="month"
-                      stroke="rgba(255,255,255,0.4)"
-                      tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 12 }}
-                      axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
-                      tickLine={false}
-                    />
-                    <YAxis
-                      stroke="rgba(255,255,255,0.4)"
-                      tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 12 }}
-                      axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
-                      tickLine={false}
-                      tickFormatter={(v: number) => `€${(v / 1000).toFixed(0)}k`}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: 'rgba(15, 10, 40, 0.95)',
-                        border: '1px solid rgba(0, 245, 212, 0.2)',
-                        borderRadius: '12px',
-                        backdropFilter: 'blur(12px)',
-                        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
-                        padding: '12px 16px',
-                      }}
-                      labelStyle={{ color: 'rgba(255,255,255,0.7)', fontSize: 12, marginBottom: 4 }}
-                      itemStyle={{ color: '#00F5D4', fontSize: 14, fontWeight: 600 }}
-                      formatter={(value: number) => [formatCurrency(value), 'Revenue']}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="revenue"
-                      stroke="url(#lineGradient)"
-                      strokeWidth={3}
-                      fill="url(#revenueGradient)"
-                      dot={{ r: 4, fill: '#00F5D4', stroke: '#0F0A28', strokeWidth: 2 }}
-                      activeDot={{ r: 6, fill: '#D4AF37', stroke: '#0F0A28', strokeWidth: 2 }}
-                    />
-                  </AreaChart>
+                  {chartType === 'area' ? (
+                    <AreaChart data={data.monthlyRevenue || []} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#00F5D4" stopOpacity={0.4} />
+                          <stop offset="50%" stopColor="#3A0CA3" stopOpacity={0.15} />
+                          <stop offset="95%" stopColor="#3A0CA3" stopOpacity={0} />
+                        </linearGradient>
+                        <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="0">
+                          <stop offset="0%" stopColor="#3A0CA3" />
+                          <stop offset="50%" stopColor="#00F5D4" />
+                          <stop offset="100%" stopColor="#D4AF37" />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                      <XAxis
+                        dataKey="month"
+                        stroke="rgba(255,255,255,0.4)"
+                        tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 12 }}
+                        axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+                        tickLine={false}
+                      />
+                      <YAxis
+                        stroke="rgba(255,255,255,0.4)"
+                        tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 12 }}
+                        axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+                        tickLine={false}
+                        tickFormatter={(v: number) => `€${(v / 1000).toFixed(0)}k`}
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: 'rgba(15, 10, 40, 0.95)',
+                          border: '1px solid rgba(0, 245, 212, 0.2)',
+                          borderRadius: '12px',
+                          backdropFilter: 'blur(12px)',
+                          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+                          padding: '12px 16px',
+                        }}
+                        labelStyle={{ color: 'rgba(255,255,255,0.7)', fontSize: 12, marginBottom: 4 }}
+                        itemStyle={{ color: '#00F5D4', fontSize: 14, fontWeight: 600 }}
+                        formatter={(value: number) => [formatCurrency(value), 'Revenue']}
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="revenue"
+                        stroke="url(#lineGradient)"
+                        strokeWidth={3}
+                        fill="url(#revenueGradient)"
+                        dot={{ r: 4, fill: '#00F5D4', stroke: '#0F0A28', strokeWidth: 2 }}
+                        activeDot={{ r: 6, fill: '#D4AF37', stroke: '#0F0A28', strokeWidth: 2 }}
+                      />
+                    </AreaChart>
+                  ) : (
+                    <BarChart data={data.monthlyRevenue || []} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#00F5D4" stopOpacity={0.8} />
+                          <stop offset="100%" stopColor="#3A0CA3" stopOpacity={0.4} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                      <XAxis
+                        dataKey="month"
+                        stroke="rgba(255,255,255,0.4)"
+                        tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 12 }}
+                        axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+                        tickLine={false}
+                      />
+                      <YAxis
+                        stroke="rgba(255,255,255,0.4)"
+                        tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 12 }}
+                        axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+                        tickLine={false}
+                        tickFormatter={(v: number) => `€${(v / 1000).toFixed(0)}k`}
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: 'rgba(15, 10, 40, 0.95)',
+                          border: '1px solid rgba(0, 245, 212, 0.2)',
+                          borderRadius: '12px',
+                          backdropFilter: 'blur(12px)',
+                          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+                          padding: '12px 16px',
+                        }}
+                        labelStyle={{ color: 'rgba(255,255,255,0.7)', fontSize: 12, marginBottom: 4 }}
+                        itemStyle={{ color: '#00F5D4', fontSize: 14, fontWeight: 600 }}
+                        formatter={(value: number) => [formatCurrency(value), 'Revenue']}
+                      />
+                      <Bar dataKey="revenue" fill="url(#barGradient)" radius={[6, 6, 0, 0]} />
+                    </BarChart>
+                  )}
                 </ResponsiveContainer>
               </div>
             </CardContent>
@@ -869,18 +1037,90 @@ export default function DashboardModule() {
         </div>
       </motion.div>
 
-      {/* Upcoming Schedule */}
+      {/* ─── Studio Performance Mini-Section ─── */}
+      <motion.div variants={itemVariants}>
+        <div className="flex items-center gap-3 mb-4">
+          <h3 className="text-lg font-bold font-['Space_Grotesk']">Studio Performance</h3>
+          <Target className="h-4 w-4 text-brand-gold" />
+          <div className="gradient-line flex-1" />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* Client Satisfaction */}
+          <Card className="glass-card card-shine glass-hover border-border/20 rounded-xl">
+            <CardContent className="p-5 flex items-center gap-4">
+              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-brand-cyan/20 to-brand-cyan/5 flex items-center justify-center shrink-0">
+                <ThumbsUp className="h-6 w-6 text-brand-cyan" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs text-muted-foreground uppercase tracking-wider">Client Satisfaction</p>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-2xl font-bold font-['Space_Grotesk'] shimmer-text">96%</span>
+                  <div className="flex items-center gap-0.5">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className={`h-3 w-3 ${i < 5 ? 'text-brand-gold fill-brand-gold' : 'text-muted-foreground/30'}`} />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Project On-Time Rate */}
+          <Card className="glass-card card-shine glass-hover border-border/20 rounded-xl">
+            <CardContent className="p-5 flex items-center gap-4">
+              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-brand-gold/20 to-brand-gold/5 flex items-center justify-center shrink-0">
+                <Timer className="h-6 w-6 text-brand-gold" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs text-muted-foreground uppercase tracking-wider">On-Time Rate</p>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-2xl font-bold font-['Space_Grotesk']">87%</span>
+                  <div className="flex items-center gap-1">
+                    <TrendingUp className="h-3.5 w-3.5 text-green-400" />
+                    <span className="text-xs text-green-400">+4%</span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Revenue Per Project */}
+          <Card className="glass-card card-shine glass-hover border-border/20 rounded-xl">
+            <CardContent className="p-5 flex items-center gap-4">
+              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-brand-indigo/20 to-brand-indigo/5 flex items-center justify-center shrink-0">
+                <DollarSign className="h-6 w-6 text-brand-indigo-light" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs text-muted-foreground uppercase tracking-wider">Revenue Per Project</p>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-2xl font-bold font-['Space_Grotesk']">€19.3K</span>
+                  <span className="text-xs text-muted-foreground">avg</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </motion.div>
+
+      {/* ─── Upcoming Schedule (Enhanced) ─── */}
       <motion.div variants={itemVariants}>
         <div className="flex items-center gap-3 mb-4">
           <h3 className="text-lg font-bold font-['Space_Grotesk']">Upcoming Schedule</h3>
           <Calendar className="h-4 w-4 text-brand-gold" />
           <div className="gradient-line flex-1" />
+          {/* Live clock */}
+          <div className="flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-green-400 pulse-cyan" />
+            <LiveClock />
+          </div>
         </div>
         <Card className="glass-card card-shine border-border/20 rounded-xl">
           <CardContent className="p-5">
             <div className="space-y-3 relative pl-6">
-              {/* Timeline connecting line for schedule */}
-              <div className="absolute left-[11px] top-4 bottom-4 w-0.5 bg-gradient-to-b from-brand-indigo/40 via-brand-cyan/30 to-brand-gold/20" />
+              {/* Timeline connecting line (dotted) */}
+              <div className="absolute left-[11px] top-4 bottom-4 w-0.5 timeline-connector-line" style={{
+                background: 'repeating-linear-gradient(to bottom, rgba(58, 12, 163, 0.4) 0px, rgba(58, 12, 163, 0.4) 4px, transparent 4px, transparent 8px, rgba(0, 245, 212, 0.3) 8px, rgba(0, 245, 212, 0.3) 12px, transparent 12px, transparent 16px)',
+              }} />
               {UPCOMING_SCHEDULE.map((event, i) => (
                 <motion.div
                   key={event.id}
@@ -909,6 +1149,17 @@ export default function DashboardModule() {
                   </Badge>
                 </motion.div>
               ))}
+            </div>
+            {/* View Full Calendar button */}
+            <div className="mt-4 pt-3 border-t border-border/20">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full text-brand-cyan hover:text-brand-cyan hover:bg-brand-cyan/10"
+              >
+                <ExternalLink className="h-3 w-3 mr-1.5" />
+                View Full Calendar
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -999,7 +1250,7 @@ export default function DashboardModule() {
           </Card>
         </motion.div>
 
-        {/* Studio Announcements */}
+        {/* ─── Studio Announcements (Enhanced) ─── */}
         <motion.div variants={itemVariants}>
           <Card className="glass-card card-shine border-border/20 rounded-xl h-full">
             <CardHeader className="pb-3">
@@ -1010,21 +1261,37 @@ export default function DashboardModule() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3 max-h-80 overflow-y-auto">
-                {ANNOUNCEMENTS.map((announcement, i) => {
+                {announcements.map((announcement, i) => {
                   const catStyle = getCategoryStyle(announcement.category);
                   return (
                     <motion.div
                       key={announcement.id}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, x: 20 }}
                       transition={{ duration: 0.2, delay: i * 0.05 }}
-                      className="p-3 rounded-xl bg-brand-surface-light/30 hover:bg-brand-surface-light/50 transition-all group"
+                      className={`relative p-3 rounded-xl bg-brand-surface-light/30 hover:bg-brand-surface-light/50 transition-all group border-l-3 ${catStyle.border}`}
                     >
+                      {/* Dismiss button */}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => dismissAnnouncement(announcement.id)}
+                        className="absolute top-1 right-1 h-5 w-5 text-muted-foreground/40 hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
                       <div className="flex items-center gap-2 mb-1.5">
                         <Badge variant="outline" className={`${catStyle.badge} text-[10px] gap-1 border px-1.5 py-0`}>
                           {catStyle.icon}
                           {announcement.category}
                         </Badge>
+                        {/* New badge */}
+                        {announcement.isNew && (
+                          <Badge className="bg-brand-cyan/20 text-brand-cyan border-brand-cyan/30 text-[9px] h-4 px-1.5 font-bold">
+                            NEW
+                          </Badge>
+                        )}
                         <span className="text-[10px] text-muted-foreground ml-auto">
                           {new Date(announcement.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                         </span>

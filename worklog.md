@@ -591,3 +591,104 @@ Task: QA testing, bug fixes, styling improvements, new features (Expenses, Mood 
 5. Add bulk actions for expenses (bulk approve, bulk delete)
 6. Implement data persistence for Settings module (save to DB)
 7. Add more realistic seed data with varied dates for better chart visualization
+
+---
+Task ID: R3-3
+Agent: Styling Enhancement Agent
+Task: Massively improve the styling of the Dashboard module and the app shell (page.tsx)
+
+## Work Log
+
+### 1. Page Shell (`/src/app/page.tsx`) Improvements
+- **Sticky Footer**: Added a sticky footer bar at the bottom of the main content area with:
+  - Left: "© 2026 Tanti Interiors StudioOS" in small muted text
+  - Center: "● System Online" status indicator in green with pulse-cyan animation
+  - Right: "v2.4.0 • Malta" in small muted text
+  - Uses `glass` class, `h-8`, `border-t border-border/10`
+  - Footer uses `mt-auto` so it sticks to bottom when content is short
+- **Main content layout**: Changed to `min-h-screen flex flex-col` with `relative` positioning so the footer always appears at the bottom
+- **Gradient line above footer**: Added `gradient-line` class div above footer for subtle animated separator
+- **Keyboard shortcut hints in sidebar**: Added small text at bottom of sidebar showing "⌘K Search • ⌘N New" with muted-foreground/60 opacity
+
+### 2. Dashboard Module (`/src/components/studio/dashboard.tsx`) Improvements
+
+**A. Hero Welcome Section Enhancement**
+- Replaced the simple "Welcome to StudioOS" heading with a striking hero section:
+  - Background: `dot-pattern` class with radial gradient overlay (indigo/cyan/gold)
+  - Large heading "Welcome back to StudioOS" with `shimmer-text` effect
+  - Subheading with "Tanti Admin" in brand-cyan and current date displayed prominently
+  - Quick stats row: "13 Clients • 8 Projects • €154K Revenue" with matching icons
+  - AI Assistant and New Project buttons on the right
+- Minimized the onboarding banner to a compact inline version (smaller icons, horizontal layout, dismiss button)
+
+**B. KPI Cards Enhancement**
+- Changed `glow-border` to `gradient-border-animated` class for animated gradient borders on hover
+- Revenue figure already uses `sparkle-text` class (preserved)
+- Improved change indicators:
+  - Revenue card: Green TrendingUp arrow + "+12.5%" with sparkline
+  - Projects card: Green TrendingUp arrow + "+2 new this month" with sparkline
+  - Clients card: Green TrendingUp arrow + "+2 this month" with sparkline
+  - Messages card: Red TrendingDown arrow + "-3 vs last week"
+- Added `MicroSparkline` component: tiny inline CSS bar charts showing last 7 days
+- Icon backgrounds upgraded from flat color to gradient circles (e.g., `bg-gradient-to-br from-brand-cyan/20 to-brand-cyan/5`)
+
+**C. Revenue Charts Enhancement**
+- Added "Last 6 Months" badge in the section header with brand-cyan styling
+- Added chart type toggle (Area ↔ Bar) button with segmented control styling
+- Imported `BarChart`, `Bar` from recharts for bar chart mode
+- Bar chart uses gradient fill (cyan to indigo) with rounded top corners
+- Tooltip styling preserved with glassmorphism (glass-strong equivalent inline styles)
+
+**D. Schedule Section Enhancement**
+- Added `LiveClock` component showing current time with live seconds update
+- Added green pulse dot next to clock
+- Connected schedule items with dotted/dashed gradient timeline connector line (alternating indigo/cyan)
+- Added "View Full Calendar" button with ExternalLink icon at bottom of schedule section
+- Added separator line above the button
+
+**E. Announcements Enhancement**
+- Added "NEW" badge on recent announcements (first 2 items have `isNew: true`)
+- Added dismiss button (X) on each announcement that appears on hover (opacity transition)
+- Added colored left border per category using `getCategoryStyle().border`:
+  - Design: cyan border
+  - Team: indigo border
+  - Events: gold border
+  - Procurement: green border
+- Announcements are now dismissable via state management (`dismissAnnouncement` function)
+- Added `exit={{ opacity: 0, x: 20 }}` animation on dismiss
+
+**F. Studio Performance Mini-Section**
+- Added new section between Revenue Overview and Schedule with 3 metric cards:
+  1. **Client Satisfaction**: 96% with 5 gold stars and shimmer-text effect, ThumbsUp icon
+  2. **Project On-Time Rate**: 87% with TrendingUp +4% indicator, Timer icon
+  3. **Revenue Per Project**: €19.3K average, DollarSign icon with indigo gradient
+- Section header with Target icon and gradient-line separator
+- All cards use `glass-card card-shine glass-hover` styling
+
+### Technical Changes
+- Added imports: `BarChart`, `Bar` from recharts; `ExternalLink`, `ThumbsUp`, `Target`, `Timer` from lucide-react
+- Added `MicroSparkline` component for inline sparkline bars
+- Added `LiveClock` component with 1-second interval timer
+- Added `chartType` state (`'area' | 'bar'`) for chart toggle
+- Added `announcements` state with `dismissAnnouncement` handler
+- Changed `Announcement` interface to include `isNew?: boolean` property
+- Changed `INITIAL_ANNOUNCEMENTS` to include `isNew` flags on first 2 items
+- Changed `getCategoryStyle` to return `border` property for colored left borders
+- Onboarding banner minimized to compact inline layout
+- All existing functionality preserved
+- No new npm dependencies added
+
+### Lint & Build
+- `bun run lint` passes with 0 errors
+- `npx next build` compiles successfully
+
+## Stage Summary
+- App shell (page.tsx) enhanced with sticky footer, gradient line, sidebar keyboard shortcuts
+- Dashboard hero section completely redesigned with shimmer text, quick stats, and radial gradient
+- KPI cards enhanced with animated gradient borders, micro-sparklines, gradient icon backgrounds
+- Revenue charts now support Area ↔ Bar toggle with segmented control
+- Schedule section enhanced with live clock, dotted timeline connectors, View Full Calendar button
+- Announcements enhanced with NEW badges, dismiss buttons, colored left borders per category
+- New Studio Performance mini-section with 3 metric cards
+- All styling maintains consistent glassmorphism + dark luxury aesthetic with brand colors
+- Lint passes, build succeeds
