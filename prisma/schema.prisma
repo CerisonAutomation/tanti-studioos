@@ -8,16 +8,18 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  name         String
-  passwordHash String?
-  role         String   @default("admin")
-  avatar       String?
-  phone        String?
-  aiApiKey     String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id              String   @id @default(cuid())
+  email           String   @unique
+  name            String
+  passwordHash    String?
+  role            String   @default("admin")
+  avatar          String?
+  phone           String?
+  aiApiKey        String?
+  googleGenAIApiKey String?
+  openrouterApiKey String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
 
 model Client {
@@ -43,7 +45,7 @@ model Client {
   documents     Document[]
   expenses      Expense[]
   calendarEvents CalendarEvent[]
-}
+  tags        ClientTag[]
 
 model Project {
   id          String   @id @default(cuid())
@@ -281,4 +283,29 @@ model CalendarEvent {
 
   client  Client?  @relation(fields: [clientId], references: [id])
   project Project? @relation(fields: [projectId], references: [id])
+}
+
+model Tag {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  color       String   @default("#6366f1")
+  category    String?  // e.g., "interest", "budget", "timeline", "source"
+  keywords    String[] // keywords for auto-tagging
+  createdAt   DateTime @default(now())
+
+  clients     ClientTag[]
+}
+
+// Junction: Client <-> Tag many-to-many
+model ClientTag {
+  clientId    String
+  tagId       String
+  assignedAt DateTime @default(now())
+  confidence Float?    // AI confidence score (0-1)
+  source     String?   // "manual", "auto", "ai"
+
+  client     Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  tag        Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([clientId, tagId])
 }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import ZAI from 'z-ai-web-dev-sdk';
+import { complete } from '@/lib/openrouter';
 
 const SYSTEM_PROMPT = `You are the AI assistant for Tanti Interiors, a luxury interior design studio in Valletta, Malta. You specialize in:
 - Interior design concepts and recommendations
@@ -21,8 +21,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Message is required' }, { status: 400 });
     }
 
-    const zai = await ZAI.create();
-
     // Build context based on conversation type
     let systemPrompt = SYSTEM_PROMPT;
     if (type === 'design') {
@@ -33,15 +31,10 @@ export async function POST(req: NextRequest) {
       systemPrompt += '\n\nFocus on procurement advice for interior design materials and furniture. Suggest suppliers, lead times, and cost considerations.';
     }
 
-    const completion = await zai.chat.completions.create({
-      messages: [
-        { role: 'assistant', content: systemPrompt },
-        { role: 'user', content: message }
-      ],
-      thinking: { type: 'disabled' }
+    // Use OpenRouter for AI response
+    const aiResponse = await complete(message, {
+      model: 'google/gemini-2.0-flash-lite-001',
     });
-
-    const aiResponse = completion.choices[0]?.message?.content || 'I apologize, I was unable to generate a response. Please try again.';
 
     // Save or update conversation in database
     const { db } = await import('@/lib/db');

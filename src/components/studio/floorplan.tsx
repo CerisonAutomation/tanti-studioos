@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -182,7 +182,7 @@ export default function FloorplanEditor() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ data }),
       });
-      await fetchFloorplans();
+      await load();
     } catch (e) { console.error(e); }
     setSaving(false);
   };
@@ -200,7 +200,7 @@ export default function FloorplanEditor() {
         const fp = await res.json();
         setShowNewDialog(false);
         setNewName('');
-        await fetchFloorplans();
+        await load();
         openFloorplan(fp);
       }
     } catch (e) { console.error(e); }
@@ -211,7 +211,7 @@ export default function FloorplanEditor() {
     try {
       await fetch(`/api/floorplans/${id}`, { method: 'DELETE' });
       if (activeFloorplan?.id === id) setActiveFloorplan(null);
-      await fetchFloorplans();
+      await load();
     } catch (e) { console.error(e); }
   };
 
@@ -413,6 +413,7 @@ export default function FloorplanEditor() {
               </Button>
             </DialogTrigger>
             <DialogContent className="glass-card border-brand-indigo/30">
+              <DialogDescription className="sr-only">Create a new floorplan</DialogDescription>
               <DialogHeader>
                 <DialogTitle className="gradient-text">Create New Floorplan</DialogTitle>
               </DialogHeader>

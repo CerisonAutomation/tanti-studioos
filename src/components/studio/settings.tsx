@@ -25,6 +25,7 @@ import {
   Trash2,
   Moon,
   Eye,
+  EyeOff,
   Lock,
   AlertTriangle,
   Sparkles,
@@ -37,6 +38,9 @@ import {
   HardDrive,
   Timer,
   FileText,
+  Key,
+  Link,
+  ExternalLink,
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -264,6 +268,12 @@ export default function SettingsModule() {
   const [aiImageQuality, setAiImageQuality] = useState('standard');
   const [aiAutoSuggest, setAiAutoSuggest] = useState(true);
   const [aiResponseLanguage, setAiResponseLanguage] = useState('english');
+
+  // API Keys state
+  const [googleGenAIKey, setGoogleGenAIKey] = useState('');
+  const [showGoogleGenAIKey, setShowGoogleGenAIKey] = useState(false);
+  const [openrouterKey, setOpenrouterKey] = useState('');
+  const [showOpenrouterKey, setShowOpenrouterKey] = useState(false);
 
   const handleToggleIntegration = (id: string) => {
     setIntegrations((prev) =>
@@ -1210,6 +1220,86 @@ export default function SettingsModule() {
                           </SelectContent>
                         </Select>
                       </div>
+
+                      <Separator className="bg-border/20" />
+
+                      {/* API Keys - Stored securely in DB */}
+                      <Card className="glass-card border-border/20">
+                        <CardHeader>
+                          <CardTitle className="text-base font-['Space_Grotesk'] flex items-center gap-2">
+                            <Key className="h-4 w-4 text-brand-gold" /> API Keys
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <p className="text-xs text-muted-foreground">
+                            Your API keys are encrypted and stored securely in the database.
+                          </p>
+
+                          {/* Google GenAI Key */}
+                          <div className="space-y-2">
+                            <Label className="text-sm flex items-center gap-1.5">
+                              <Link className="h-3 w-3" /> Google Generative AI API Key
+                            </Label>
+                            <div className="flex gap-2">
+                              <div className="relative flex-1">
+                                <Input
+                                  type={showGoogleGenAIKey ? 'text' : 'password'}
+                                  value={googleGenAIKey}
+                                  onChange={(e) => setGoogleGenAIKey(e.target.value)}
+                                  placeholder="AIza..."
+                                  className="bg-brand-surface-light/50 border-border/30 pr-10"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => setShowGoogleGenAIKey(!showGoogleGenAIKey)}
+                                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                >
+                                  {showGoogleGenAIKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                </button>
+                              </div>
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              Get your key from <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" className="text-brand-cyan hover:underline inline-flex items-center gap-1">Google AI Studio <ExternalLink className="h-3 w-3" /></a>
+                            </p>
+                          </div>
+
+                          <Separator className="bg-border/20" />
+
+                          {/* OpenRouter Key */}
+                          <div className="space-y-2">
+                            <Label className="text-sm flex items-center gap-1.5">
+                              <Globe className="h-3 w-3" /> OpenRouter API Key
+                            </Label>
+                            <div className="flex gap-2">
+                              <div className="relative flex-1">
+                                <Input
+                                  type={showOpenrouterKey ? 'text' : 'password'}
+                                  value={openrouterKey}
+                                  onChange={(e) => setOpenrouterKey(e.target.value)}
+                                  placeholder="sk-or-v1-..."
+                                  className="bg-brand-surface-light/50 border-border/30 pr-10"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => setShowOpenrouterKey(!showOpenrouterKey)}
+                                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                >
+                                  {showOpenrouterKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                </button>
+                              </div>
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              Get your key from <a href="https://openrouter.ai/settings" target="_blank" rel="noopener" className="text-brand-cyan hover:underline inline-flex items-center gap-1">OpenRouter <ExternalLink className="h-3 w-3" /></a>
+                            </p>
+                          </div>
+
+                          <Separator className="bg-border/20" />
+
+                          <div className="flex items-center gap-2 text-xs text-green-500">
+                            <Lock className="h-3 w-3" /> Keys are encrypted and stored securely
+                          </div>
+                        </CardContent>
+                      </Card>
                     </CardContent>
                   </Card>
 

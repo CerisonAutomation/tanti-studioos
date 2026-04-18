@@ -21,7 +21,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -497,6 +497,7 @@ export default function CalendarModule() {
       {/* Event Detail Dialog */}
       <Dialog open={!!selectedEvent} onOpenChange={() => setSelectedEvent(null)}>
         <DialogContent className="glass-premium border-brand-cyan/20 max-w-md">
+          <DialogDescription className="sr-only">Event details</DialogDescription>
           {selectedEvent && (() => {
             const typeConf = getTypeConfig(selectedEvent.type);
             const Icon = typeConf.icon;
@@ -561,6 +562,7 @@ export default function CalendarModule() {
       {/* Create/Edit Event Dialog */}
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
         <DialogContent className="glass-premium border-brand-cyan/20 max-w-md">
+          <DialogDescription className="sr-only">{isEditing ? 'Edit event' : 'Create new event'}</DialogDescription>
           <DialogHeader>
             <DialogTitle className="font-['Space_Grotesk']">{isEditing ? 'Edit Event' : 'New Event'}</DialogTitle>
           </DialogHeader>

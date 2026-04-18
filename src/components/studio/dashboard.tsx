@@ -452,7 +452,7 @@ export default function DashboardModule() {
       const dashData = await dashRes.json();
       const tasksData = await tasksRes.json();
       setData(dashData);
-      setTasks((tasksData.tasks || tasksData || []).slice(0, 5));
+      setTasks(Array.isArray(tasksData) ? tasksData.slice(0, 5) : []);
     } catch (e) {
       console.error('Failed to fetch dashboard data', e);
     } finally {
@@ -498,7 +498,8 @@ export default function DashboardModule() {
   }
 
   const projectStatuses = ['planning', 'design', 'procurement', 'execution', 'completion', 'delivered'];
-  const totalPipelineProjects = projectStatuses.reduce((sum, s) => sum + (data.projectsByStatus[s] || 0), 0);
+  const statusCounts = projectStatuses.reduce((acc, s) => { acc[s] = data?.projectsByStatus?.[s] || 0; return acc; }, {} as Record<string, number>);
+  const totalPipelineProjects = projectStatuses.reduce((sum, s) => sum + (statusCounts[s] || 0), 0);
 
   const today = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
