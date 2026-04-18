@@ -46,6 +46,7 @@ model Client {
   expenses      Expense[]
   calendarEvents CalendarEvent[]
   tags        ClientTag[]
+}
 
 model Project {
   id          String   @id @default(cuid())
@@ -290,7 +291,7 @@ model Tag {
   name        String   @unique
   color       String   @default("#6366f1")
   category    String?  // e.g., "interest", "budget", "timeline", "source"
-  keywords    String[] // keywords for auto-tagging
+  keywords    String // moved to auto-tag.ts logic
   createdAt   DateTime @default(now())
 
   clients     ClientTag[]
